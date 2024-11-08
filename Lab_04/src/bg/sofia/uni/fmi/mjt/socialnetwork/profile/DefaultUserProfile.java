@@ -132,10 +132,9 @@ public class DefaultUserProfile implements UserProfile {
         }
 
         //System.out.println(userProfile.getUsername());
-        union(this, userProfile);
+        //union(this, userProfile);
 
-        ((DefaultUserProfile)userProfile).friendSet.add(userProfile);
-        //userProfile.addFriend(this);
+        ((DefaultUserProfile)userProfile).friendSet.add(this);
         return friendSet.add(userProfile);
     }
 
@@ -155,7 +154,7 @@ public class DefaultUserProfile implements UserProfile {
         if(!friendSet.contains(userProfile)){
             return false;
         }
-        ((DefaultUserProfile)userProfile).friendSet.remove(userProfile);
+        ((DefaultUserProfile)userProfile).friendSet.remove(this);
         return friendSet.remove(userProfile);
     }
 

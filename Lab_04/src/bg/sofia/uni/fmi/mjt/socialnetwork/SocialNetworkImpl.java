@@ -8,12 +8,12 @@ import bg.sofia.uni.fmi.mjt.socialnetwork.profile.DefaultUserProfile;
 import bg.sofia.uni.fmi.mjt.socialnetwork.profile.Interest;
 import bg.sofia.uni.fmi.mjt.socialnetwork.profile.UserProfile;
 
-import java.io.Console;
 import java.sql.Array;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Set;
@@ -64,13 +64,13 @@ public class SocialNetworkImpl implements SocialNetwork {
      * @throws IllegalArgumentException  if the content is null or empty
      */
     public Post post(UserProfile userProfile, String content) throws UserRegistrationException {
-        if (userProfile == null || content == null||content.isBlank()) {
+        if (userProfile == null || content == null || content.isBlank()) {
             throw new IllegalArgumentException("null passed");
         }
         if (!users.contains(userProfile)) {
             throw new UserRegistrationException("User is not registered");
         }
-        if(content.isBlank()){
+        if (content.isBlank()) {
             System.out.println("empty contents");
         }
         Post post = new SocialFeedPost(userProfile, content);
@@ -88,13 +88,13 @@ public class SocialNetworkImpl implements SocialNetwork {
     }
 
     public Set<UserProfile> getReachedUsers(UserProfile toBeReached) {
-        Set<UserProfile> result=new HashSet<>();
-        UserProfile parent= DefaultUserProfile.find(toBeReached);
+        Set<UserProfile> result = new HashSet<>();
+        UserProfile parent = DefaultUserProfile.find(toBeReached);
 
-        for(UserProfile user: users){
-            UserProfile userParent=DefaultUserProfile.find(user);
+        for (UserProfile user : users) {
+            UserProfile userParent = DefaultUserProfile.find(user);
             System.out.println(userParent.getUsername());
-            if(userParent==parent){
+            if (userParent == parent) {
                 result.add(user);
             }
         }
@@ -109,7 +109,7 @@ public class SocialNetworkImpl implements SocialNetwork {
             Set<Interest> intersection = new HashSet<>(user.getInterests());
             intersection.retainAll(interestSet);
 
-            if (!intersection.isEmpty()){
+            if (!intersection.isEmpty()) {
                 result.add(user);
             }
         }
@@ -134,6 +134,16 @@ public class SocialNetworkImpl implements SocialNetwork {
             }
         }
 
+        Iterator<UserProfile> iterator = visited.iterator();
+        while (iterator.hasNext()) {
+            UserProfile user = iterator.next();
+            Set<Interest> interestSet = new HashSet<>(startUser.getInterests());
+            interestSet.retainAll(user.getInterests()); // Fix: retain the intersection of user and startUser interests
+            if (interestSet.isEmpty()) {
+                iterator.remove();
+            }
+        }
+
         return visited;
     }
 
@@ -154,30 +164,27 @@ public class SocialNetworkImpl implements SocialNetwork {
      * @throws IllegalArgumentException if the post is <code>null</code>.
      */
     public Set<UserProfile> getReachedUsers(Post post) {
-        if(post==null){
+        if (post == null) {
             throw new IllegalArgumentException("post is null");
         }
-        Set<UserProfile> usersWithSameInterest = getReachedUsers(post.getAuthor().getInterests());
-        Set<UserProfile> friends=bfs(post.getAuthor());
+        //Set<UserProfile> usersWithSameInterest = getReachedUsers(post.getAuthor().getInterests());
+        Set<UserProfile> friends = bfs(post.getAuthor());
 
 
-        System.out.println(post.getAuthor().getUsername());
+        //System.out.println(post.getAuthor().getUsername());
 
 
-        System.out.printf("Users with same interest: %d\n",usersWithSameInterest.size());
-        System.out.printf("Users union: %d\n",friends.size());
-
+        //System.out.printf("Users with same interest: %d\n", usersWithSameInterest.size());
+        //System.out.printf("Users union: %d\n", friends.size());
         //DefaultUserProfile.debug();
-
-        usersWithSameInterest.retainAll(friends);
-        usersWithSameInterest.remove(post.getAuthor());
-
+        //usersWithSameInterest.retainAll(friends);
+        //usersWithSameInterest.remove(post.getAuthor());
 //        StackTraceElement[] stackTraceElements=Thread.currentThread().getStackTrace();
 //        for(StackTraceElement el:stackTraceElements){
 //            System.out.println(el);
 //        }
 
-        return usersWithSameInterest;
+        return friends;
     }
 
     /**
@@ -193,13 +200,13 @@ public class SocialNetworkImpl implements SocialNetwork {
     public Set<UserProfile> getMutualFriends(UserProfile userProfile1, UserProfile userProfile2)
             throws UserRegistrationException {
 
-        if(userProfile1==null || userProfile2==null){
-            throw  new IllegalArgumentException("users are null");
+        if (userProfile1 == null || userProfile2 == null) {
+            throw new IllegalArgumentException("users are null");
         }
-        if((!users.contains(userProfile1)) ||(!users.contains(userProfile2))){
-            throw  new UserRegistrationException("user is not registered");
+        if ((!users.contains(userProfile1)) || (!users.contains(userProfile2))) {
+            throw new UserRegistrationException("user is not registered");
         }
-        Set<UserProfile> intersecion=new HashSet<>(userProfile1.getFriends());
+        Set<UserProfile> intersecion = new HashSet<>(userProfile1.getFriends());
         intersecion.retainAll(userProfile2.getFriends());
 
         return intersecion;
@@ -213,7 +220,7 @@ public class SocialNetworkImpl implements SocialNetwork {
      * descending order
      */
     public SortedSet<UserProfile> getAllProfilesSortedByFriendsCount() {
-        SortedSet<UserProfile> result= new TreeSet<>(new ProfilesSortedByFriendsCountComparator());
+        SortedSet<UserProfile> result = new TreeSet<>(new ProfilesSortedByFriendsCountComparator());
         result.addAll(users);
 
         return result;
