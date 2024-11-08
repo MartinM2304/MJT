@@ -32,14 +32,11 @@ public class DefaultUserProfile implements UserProfile {
         if(this==obj){
             return true;
         }
-        if(obj==null){
-            return false;
-        }
-        if(!(obj instanceof DefaultUserProfile)){
+        if (obj == null || !(obj instanceof DefaultUserProfile)) {
             return false;
         }
         DefaultUserProfile other=(DefaultUserProfile) obj;
-        return this.username.equals(other.username);
+        return Objects.equals(username,other.username);
     }
 
     /**
@@ -99,7 +96,7 @@ public class DefaultUserProfile implements UserProfile {
     }
 
     public static UserProfile find(UserProfile user) {
-        if (parent.get(user) == null) {
+        if (parent.get(user) == null||parent.get(user)==user) {
             return user;
         }
 
@@ -133,7 +130,10 @@ public class DefaultUserProfile implements UserProfile {
         if (userProfile == null|| userProfile==this) {
             throw new IllegalArgumentException("user profile is null");
         }
+
+        //System.out.println(userProfile.getUsername());
         union(this, userProfile);
+
         ((DefaultUserProfile)userProfile).friendSet.add(userProfile);
         //userProfile.addFriend(this);
         return friendSet.add(userProfile);
@@ -152,12 +152,9 @@ public class DefaultUserProfile implements UserProfile {
         if (userProfile == null) {
             throw new IllegalArgumentException("user Profile is null");
         }
-
         if(!friendSet.contains(userProfile)){
             return false;
         }
-        boolean inProgress=true;
-
         ((DefaultUserProfile)userProfile).friendSet.remove(userProfile);
         return friendSet.remove(userProfile);
     }
@@ -171,12 +168,24 @@ public class DefaultUserProfile implements UserProfile {
      */
     public boolean isFriend(UserProfile userProfile) {
         if (userProfile == null) {
-            System.out.println("inside if");
+            //System.out.println("inside if");
             throw new IllegalArgumentException("user Profile is null");
         }
 
-        System.out.println("isFriend return");
+        //System.out.println("isFriend return");
         return friendSet.contains(userProfile);
+    }
+
+    public static void debug(){
+        System.out.println("debug Start");
+        for(UserProfile user:parent.keySet()){
+            System.out.print(user.getUsername());
+            System.out.print(" - ");
+            UserProfile found=find(user);
+            //if(found)
+            System.out.println(find(user).getUsername());
+        }
+        System.out.println("debug END");
     }
 
 }

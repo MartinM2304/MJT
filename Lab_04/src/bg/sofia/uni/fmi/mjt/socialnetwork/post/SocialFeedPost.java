@@ -41,6 +41,7 @@ public class SocialFeedPost implements Post {
      * @return the unique id of the post
      */
     public String getUniqueId() {
+        //System.out.println(uniqueId);
         return uniqueId;
     }
 

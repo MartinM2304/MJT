@@ -7,7 +7,11 @@ import java.util.Comparator;
 public class ProfilesSortedByFriendsCountComparator implements Comparator<UserProfile> {
     @Override
     public int compare(UserProfile first, UserProfile second){
-
-        return (Integer.compare(first.getFriends().size(),second.getFriends().size()));
+        if (first.getFriends().size() < second.getFriends().size()) {
+            return 1;
+        } else if (first.getFriends().size() > second.getFriends().size()) {
+            return -1;
+        }
+        return 0;
     }
 }

@@ -14,6 +14,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.Queue;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -115,6 +117,26 @@ public class SocialNetworkImpl implements SocialNetwork {
         return result;
     }
 
+    private Set<UserProfile> bfs(UserProfile startUser) {
+        Set<UserProfile> visited = new HashSet<>();
+        Queue<UserProfile> queue = new LinkedList<>();
+        queue.add(startUser);
+        visited.add(startUser);
+
+        while (!queue.isEmpty()) {
+            UserProfile current = queue.poll();
+
+            for (UserProfile friend : current.getFriends()) {
+                if (!visited.contains(friend)) {
+                    visited.add(friend);
+                    queue.add(friend);
+                }
+            }
+        }
+
+        return visited;
+    }
+
     /**
      * Returns a collection of unique user profiles that can see the specified post in their feed. A
      * user can view a post if both of the following conditions are met:
@@ -136,16 +158,26 @@ public class SocialNetworkImpl implements SocialNetwork {
             throw new IllegalArgumentException("post is null");
         }
         Set<UserProfile> usersWithSameInterest = getReachedUsers(post.getAuthor().getInterests());
-        Set<UserProfile> friends=getReachedUsers(post.getAuthor());
+        Set<UserProfile> friends=bfs(post.getAuthor());
+
+
+        System.out.println(post.getAuthor().getUsername());
+
 
         System.out.printf("Users with same interest: %d\n",usersWithSameInterest.size());
         System.out.printf("Users union: %d\n",friends.size());
 
+        //DefaultUserProfile.debug();
+
         usersWithSameInterest.retainAll(friends);
         usersWithSameInterest.remove(post.getAuthor());
 
-        return usersWithSameInterest;
+//        StackTraceElement[] stackTraceElements=Thread.currentThread().getStackTrace();
+//        for(StackTraceElement el:stackTraceElements){
+//            System.out.println(el);
+//        }
 
+        return usersWithSameInterest;
     }
 
     /**
