@@ -1,7 +1,6 @@
 package bg.sofia.uni.fmi.mjt.eventbus.events;
 
 import java.util.Collection;
-import java.util.Collections;
 
 public class PayloadInteger<T> implements Payload<T> {
 

@@ -8,10 +8,16 @@ public class EventPriorityComparator<T extends Event<?>> implements Comparator<T
 
     @Override
     public int compare(T o1, T o2) {
-        int priorityCompare = Integer.compare(o1.getPriority(), o2.getPriority());
-        if (priorityCompare == 0){
-            return o1.getTimestamp().compareTo(o2.getTimestamp());
+//        int priorityCompare = Integer.compare(o1.getPriority(), o2.getPriority());
+//        if (priorityCompare == 0){
+//            return o1.getTimestamp().compareTo(o2.getTimestamp());
+//        }
+        if (o1.getPriority() < o2.getPriority()) {
+            return -1;
+        } else if (o1.getPriority() > o2.getPriority()) {
+            return 1;
         }
-        return priorityCompare;
+
+        return o1.getTimestamp().compareTo(o2.getTimestamp());
     }
 }

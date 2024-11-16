@@ -3,14 +3,13 @@ package bg.sofia.uni.fmi.mjt.eventbus.subscribers;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.PriorityQueue;
 
 import bg.sofia.uni.fmi.mjt.eventbus.comparators.EventPriorityComparator;
 import bg.sofia.uni.fmi.mjt.eventbus.events.Event;
 
 public class DeferredEventSubscriber<T extends Event<?>> implements Subscriber<T>, Iterable<T> {
 
-    private PriorityQueue<T> eventsPQ=new PriorityQueue<>(new EventPriorityComparator<>());
+    private List<T> eventsPQ = new ArrayList<>();
 
     /**
      * Store an event for processing at a later time.
@@ -20,7 +19,7 @@ public class DeferredEventSubscriber<T extends Event<?>> implements Subscriber<T
      */
     @Override
     public void onEvent(T event) {
-        if(event==null){
+        if (event == null) {
             throw new IllegalArgumentException("event is null");
         }
         eventsPQ.add(event);
@@ -35,8 +34,8 @@ public class DeferredEventSubscriber<T extends Event<?>> implements Subscriber<T
      */
     @Override
     public Iterator<T> iterator() {
-        List<T>result=new ArrayList<>(eventsPQ);
-        result.sort(new EventPriorityComparator<>());//prob not needed
+        List<T> result = new ArrayList<>(eventsPQ);
+        result.sort(new EventPriorityComparator<>());
         return result.iterator();
     }
 
