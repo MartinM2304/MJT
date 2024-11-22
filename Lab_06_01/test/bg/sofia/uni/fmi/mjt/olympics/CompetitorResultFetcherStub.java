@@ -17,11 +17,11 @@ public class CompetitorResultFetcherStub implements CompetitionResultFetcher {
      * @return a TreeSet of competitors ranked by their performance in the competition
      */
     @Override
-    public TreeSet<Competitor> getResult(Competition competition){
-        TreeSet<Competitor>result= new TreeSet<>(new Comparator<Competitor>() {
+    public TreeSet<Competitor> getResult(Competition competition) {
+        TreeSet<Competitor> result = new TreeSet<>(new Comparator<Competitor>() {
             @Override
             public int compare(Competitor o1, Competitor o2) {
-                return Integer.compare(o1.getMedals().size(),o2.getMedals().size());
+                return Integer.compare(o1.getMedals().size(), o2.getMedals().size());
             }
         });
         result.addAll(competition.competitors());

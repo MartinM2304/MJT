@@ -14,45 +14,46 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class AthleteTest {
 
     @Test
-    void testConstructorWithNullID(){
-        assertThrows(IllegalArgumentException.class,()-> new Athlete(null,"pepi","bg"));
-    }
-    @Test
-    void testConstructorWithNullName(){
-        assertThrows(IllegalArgumentException.class,()-> new Athlete("01",null,"bg"));
-    }
-    @Test
-    void testConstructorWithNullNationality(){
-        assertThrows(IllegalArgumentException.class,()-> new Athlete("02","pepi",null));
+    void testConstructorWithNullID() {
+        assertThrows(IllegalArgumentException.class, () -> new Athlete(null, "pepi", "bg"));
     }
 
     @Test
-    void testAddMedalWithNull(){
-        Competitor cmp = new Athlete("01","pepi","bg");
-        assertThrows(IllegalArgumentException.class,()->cmp.addMedal(null));
+    void testConstructorWithNullName() {
+        assertThrows(IllegalArgumentException.class, () -> new Athlete("01", null, "bg"));
     }
 
     @Test
-    void testAddMedal(){
-        Competitor cmp = new Athlete("01","pepi","bg");
+    void testConstructorWithNullNationality() {
+        assertThrows(IllegalArgumentException.class, () -> new Athlete("02", "pepi", null));
+    }
+
+    @Test
+    void testAddMedalWithNull() {
+        Competitor cmp = new Athlete("01", "pepi", "bg");
+        assertThrows(IllegalArgumentException.class, () -> cmp.addMedal(null));
+    }
+
+    @Test
+    void testAddMedal() {
+        Competitor cmp = new Athlete("01", "pepi", "bg");
         cmp.addMedal(Medal.GOLD);
         assertTrue(cmp.getMedals().contains(Medal.GOLD));
     }
 
     @Test
-    void testAddTwoMedal(){
-        Competitor cmp = new Athlete("01","pepi","bg");
+    void testAddTwoMedal() {
+        Competitor cmp = new Athlete("01", "pepi", "bg");
         cmp.addMedal(Medal.BRONZE);
         cmp.addMedal(Medal.BRONZE);
-        assertEquals(true,2==cmp.getMedals().size());
+        assertEquals(true, 2 == cmp.getMedals().size());
     }
 
     @Test
-    void testGetMedalsReturnsUnmodifiable(){
+    void testGetMedalsReturnsUnmodifiable() {
         Athlete athlete = new Athlete("1", "Pepi", "srb");
         List<Medal> medals = (List<Medal>) athlete.getMedals();
         assertThrows(UnsupportedOperationException.class, () -> medals.add(Medal.GOLD), "Medals collection should be unmodifiable");
-
     }
 
 
