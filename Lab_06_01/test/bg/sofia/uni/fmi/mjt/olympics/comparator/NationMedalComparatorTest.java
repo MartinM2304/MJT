@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Test;
 import java.util.Set;
 import java.util.TreeSet;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -19,18 +20,68 @@ import static org.mockito.Mockito.when;
 public class NationMedalComparatorTest {
 
     @Test
+    void testForNullValuesConstructor(){
+        assertThrows(IllegalArgumentException.class,()->new NationMedalComparator(null));
+    }
+
+    @Test
+    void testForNullValues(){
+        MJTOlympics olympics = mock(MJTOlympics.class);
+        NationMedalComparator comparator=new NationMedalComparator(olympics);
+        assertThrows(IllegalArgumentException.class,()->comparator.compare(null,null));
+    }
+
+    @Test
     void testCompareForBigger() {
-        //MJTOlympics olympics = new MJTOlympics();
+        MJTOlympics olympics = mock(MJTOlympics.class);
+        when(olympics.getTotalMedals("bg")).thenReturn(10);
+        when(olympics.getTotalMedals("srb")).thenReturn(5);
+
+        NationMedalComparator comparator = new NationMedalComparator(olympics);
+        assertTrue(comparator.compare("bg", "srb") < 0);
     }
 
     @Test
     void testCompareForSmaller() {
+        MJTOlympics olympics = mock(MJTOlympics.class);
+        when(olympics.getTotalMedals("bg")).thenReturn(5);
+        when(olympics.getTotalMedals("srb")).thenReturn(8);
+
+        NationMedalComparator comparator = new NationMedalComparator(olympics);
+        assertTrue(comparator.compare("bg", "srb") < 0);
 
     }
 
     @Test
     void testCompareForEquals() {
+        MJTOlympics olympics = mock(MJTOlympics.class);
+        when(olympics.getTotalMedals("bg")).thenReturn(7);
+        when(olympics.getTotalMedals("srb")).thenReturn(7);
 
+        NationMedalComparator comparator = new NationMedalComparator(olympics);
+        assertTrue(comparator.compare("bg", "srb") < 0);//TODO ask if should sort lexicographs
+    }
+
+    @Test
+    void testCompareDifferentMedalCounts() {
+        MJTOlympics olympics = mock(MJTOlympics.class);
+        when(olympics.getTotalMedals("bg")).thenReturn(5);
+        when(olympics.getTotalMedals("srb")).thenReturn(3);
+
+        NationMedalComparator comparator = new NationMedalComparator(olympics);
+
+        assertTrue(comparator.compare("bg", "srb") < 0);
+    }
+
+    @Test
+    void testCompareSameMedalCounts() {
+        MJTOlympics olympics = mock(MJTOlympics.class);
+        when(olympics.getTotalMedals("bg")).thenReturn(5);
+        when(olympics.getTotalMedals("srb")).thenReturn(5);
+
+        NationMedalComparator comparator = new NationMedalComparator(olympics);
+
+        assertTrue(comparator.compare("bg", "srb") < 0);//TODO should be leksikografski ama ne raboti neshto
     }
 
     @Test

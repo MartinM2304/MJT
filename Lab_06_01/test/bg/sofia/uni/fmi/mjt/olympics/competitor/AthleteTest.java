@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -53,7 +54,18 @@ public class AthleteTest {
     void testGetMedalsReturnsUnmodifiable() {
         Athlete athlete = new Athlete("1", "Pepi", "srb");
         List<Medal> medals = (List<Medal>) athlete.getMedals();
-        assertThrows(UnsupportedOperationException.class, () -> medals.add(Medal.GOLD), "Medals collection should be unmodifiable");
+        assertThrows(UnsupportedOperationException.class, () -> medals.add(Medal.GOLD));
+    }
+
+    @Test
+    void testEqualsHash() {
+        Athlete athlete = new Athlete("01", "apepi", "bg");
+        Athlete sameAthlete = new Athlete("01", "apepi", "bg");
+        Athlete differentAthlete = new Athlete("02", "bniki", "srb");
+
+        assertEquals(athlete, sameAthlete);
+        assertNotEquals(athlete, differentAthlete);
+        assertEquals(athlete.hashCode(), sameAthlete.hashCode());
     }
 
 
