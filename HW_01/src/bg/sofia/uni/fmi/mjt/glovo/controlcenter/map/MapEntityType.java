@@ -1,5 +1,7 @@
 package bg.sofia.uni.fmi.mjt.glovo.controlcenter.map;
 
+import bg.sofia.uni.fmi.mjt.glovo.delivery.DeliveryType;
+
 import java.util.Set;
 
 //TODO ask if enums should be tested
@@ -15,15 +17,33 @@ public enum MapEntityType {
 
     MapEntityType(char entity) {
         //TODO remove later if no validation is needed
-        if(Set.of('.','#','R','C','A','B').contains(entity)) {
+        if(isValid(entity)) {
             this.entity = entity;
         }else{
             throw new IllegalArgumentException("entity is incorrect");
         }
     }
 
+    //TODO Mnogo sym gotin :)
+    private boolean isValid(char entity){
+        return switch (entity){
+            case '.', '#', 'R', 'C', 'A', 'B' -> true;
+            default -> false;
+        };
+    }
+
     public char getEntity(){
         return entity;
+    }
+
+    public DeliveryType getDeliveryTypeIfCarOrBike(){
+        if(this==DELIVERY_GUY_BIKE){
+            return DeliveryType.BIKE;
+        }else if(this==DELIVERY_GUY_CAR){
+            return DeliveryType.CAR;
+        }else{
+            return null;
+        }
     }
 
     public static MapEntityType fromChar(char ch) {

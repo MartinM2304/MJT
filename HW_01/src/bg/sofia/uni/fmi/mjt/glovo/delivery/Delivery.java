@@ -24,6 +24,10 @@ public class Delivery {
         this.estimatedTime=estimatedTime;
     }
 
+    public Delivery(DeliveryInfo deliveryInfo, Location client,Location restaurant,String foodItem){
+        this(client,restaurant,deliveryInfo.deliveryGuyLocation(),foodItem,deliveryInfo.price(),deliveryInfo.estimatedTime());
+    }
+
     private void validate(Location client, Location restaurant, Location deliveryGuy, String foodItem, double price, int estimated){
         //TODO ask if shoul be in one if or more than 1
         if(client==null|| restaurant==null || deliveryGuy==null){
@@ -60,5 +64,18 @@ public class Delivery {
             throw new IllegalArgumentException("deliveryType is null");
         }
         this.deliveryType=deliveryType;
+    }
+
+    @Override
+    public String toString() {
+        return "Delivery{" +
+                "client=" + client +
+                ", restaurant=" + restaurant +
+                ", deliveryGuy=" + deliveryGuy +
+                ", foodItem='" + foodItem + '\'' +
+                ", price=" + price +
+                ", estimatedTime=" + estimatedTime +
+                ", deliveryType=" + deliveryType +
+                '}';
     }
 }

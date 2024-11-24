@@ -1,6 +1,8 @@
 package bg.sofia.uni.fmi.mjt.glovo.controlcenter.map;
 
+import bg.sofia.uni.fmi.mjt.glovo.Glovo;
 import bg.sofia.uni.fmi.mjt.glovo.dataStructures.Pair;
+import bg.sofia.uni.fmi.mjt.glovo.delivery.DeliveryType;
 import bg.sofia.uni.fmi.mjt.glovo.delivery.ShippingMethod;
 
 import java.util.HashMap;
@@ -42,6 +44,9 @@ public class PathFinder {
         int x = location.x();
         int y = location.y();
         MapEntityType type = MapEntityType.fromChar(map[x][y]);
+        if (Glovo.debug && type == MapEntityType.CLIENT) {
+            System.out.printf("x= %d : y= %s\n", x, y);
+        }
         return new MapEntity(location, type);
     }
 
@@ -119,18 +124,42 @@ public class PathFinder {
     }
 
     /*
-     * Returns pair of deliveryGuy and distance for the path
+     * Returns pair of deliveryGuy and distance of the path
+     * TODO make it so it works is the car guys is really far away and the bike is faster
      */
     public Pair<MapEntity, Integer> getDeliveryGuyBasedOnCriteria(ShippingMethod shippingMethod) {
         Pair<MapEntity, Integer> result = new Pair<>();
         int distance = restaurantToClientKilometers;
 
         if (shippingMethod == ShippingMethod.FASTEST) {
-            result.first = closestCar.first;
-            distance += closestCar.second;
+            int timeToCar = closestCar.second * DeliveryType.CAR.getTimePerKilometer();
+            timeToCar += restaurantToClientKilometers * DeliveryType.CAR.getTimePerKilometer();
+
+            int timeToBike = closestBike.second * DeliveryType.BIKE.getTimePerKilometer();
+            timeToBike += restaurantToClientKilometers * DeliveryType.BIKE.getTimePerKilometer();
+
+            if (timeToBike > timeToCar) {
+                result.first = closestCar.first;
+                distance += closestCar.second;
+            } else {
+                result.first = closestBike.first;
+                distance += closestBike.second;
+            }
+
         } else if (shippingMethod == ShippingMethod.CHEAPEST) {
-            result.first = closestBike.first;
-            distance += closestBike.second;
+            int priceToCar = closestCar.second * DeliveryType.CAR.getPricePerKilometer();
+            priceToCar += restaurantToClientKilometers * DeliveryType.CAR.getPricePerKilometer();
+
+            int priceToBike = closestBike.second * DeliveryType.BIKE.getPricePerKilometer();
+            priceToBike += restaurantToClientKilometers * DeliveryType.BIKE.getPricePerKilometer();
+
+            if (priceToBike > priceToCar) {
+                result.first = closestCar.first;
+                distance += closestCar.second;
+            } else {
+                result.first = closestBike.first;
+                distance += closestBike.second;
+            }
         } else {
             throw new UnsupportedOperationException("cannot have other type of shipping method");
         }
