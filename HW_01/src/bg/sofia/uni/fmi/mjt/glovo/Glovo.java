@@ -44,25 +44,26 @@ public class Glovo implements GlovoApi {
         }
     }
 
-    private void validateClient(MapEntity client){
-        if(client==null){
+    private void validateClient(MapEntity client) {
+        if (client == null) {
             throw new InvalidOrderException("client is null");
         }
-        if(client.type()!= MapEntityType.CLIENT||PathFinder.getEntityFromLocation(client.location(),mapLayout).type()!=MapEntityType.CLIENT){
+        if (client.type() != MapEntityType.CLIENT || PathFinder.getEntityFromLocation(client.location(), mapLayout).type() != MapEntityType.CLIENT) {
             throw new InvalidOrderException("clients type is not client or the coordinates doesnt correspond to a client");
         }
-        Location.validateLocationBasedOnMap(client.location(),mapLayout.length,mapLayout[0].length);
+        Location.validateLocationBasedOnMap(client.location(), mapLayout.length, mapLayout[0].length);
     }
 
-    private void validateRestaurant(MapEntity restaurant){
-        if(restaurant==null){
+    private void validateRestaurant(MapEntity restaurant) {
+        if (restaurant == null) {
             throw new InvalidOrderException("restaurant is null");
         }
-        if(restaurant.type()!= MapEntityType.RESTAURANT||PathFinder.getEntityFromLocation(restaurant.location(),mapLayout).type()!=MapEntityType.RESTAURANT){
+        if (restaurant.type() != MapEntityType.RESTAURANT || PathFinder.getEntityFromLocation(restaurant.location(), mapLayout).type() != MapEntityType.RESTAURANT) {
             throw new InvalidOrderException("restaurant type is not client or the coordinates doesnt correspond to a restaurant");
         }
-        Location.validateLocationBasedOnMap(restaurant.location(),mapLayout.length,mapLayout[0].length);
+        Location.validateLocationBasedOnMap(restaurant.location(), mapLayout.length, mapLayout[0].length);
     }
+
     private void validateDelivery(MapEntity client, MapEntity restaurant, String foodItem) {
         validateClient(client);
         validateRestaurant(restaurant);

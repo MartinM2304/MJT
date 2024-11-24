@@ -6,11 +6,9 @@ import bg.sofia.uni.fmi.mjt.glovo.delivery.DeliveryType;
 import bg.sofia.uni.fmi.mjt.glovo.delivery.ShippingMethod;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Queue;
-import java.util.Set;
 
 /*
  * PathFinder contains the restaurant it was initialized with and the closest paths from this restaurant to the

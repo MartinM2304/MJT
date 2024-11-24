@@ -2,7 +2,6 @@ package bg.sofia.uni.fmi.mjt.glovo.controlcenter.map;
 
 import bg.sofia.uni.fmi.mjt.glovo.delivery.DeliveryType;
 
-import java.util.Set;
 
 //TODO ask if enums should be tested
 public enum MapEntityType {
@@ -17,31 +16,31 @@ public enum MapEntityType {
 
     MapEntityType(char entity) {
         //TODO remove later if no validation is needed
-        if(isValid(entity)) {
+        if (isValid(entity)) {
             this.entity = entity;
-        }else{
+        } else {
             throw new IllegalArgumentException("entity is incorrect");
         }
     }
 
     //TODO Mnogo sym gotin :)
-    private boolean isValid(char entity){
-        return switch (entity){
+    private boolean isValid(char entity) {
+        return switch (entity) {
             case '.', '#', 'R', 'C', 'A', 'B' -> true;
             default -> false;
         };
     }
 
-    public char getEntity(){
+    public char getEntity() {
         return entity;
     }
 
-    public DeliveryType getDeliveryTypeIfCarOrBike(){
-        if(this==DELIVERY_GUY_BIKE){
+    public DeliveryType getDeliveryTypeIfCarOrBike() {
+        if (this == DELIVERY_GUY_BIKE) {
             return DeliveryType.BIKE;
-        }else if(this==DELIVERY_GUY_CAR){
+        } else if (this == DELIVERY_GUY_CAR) {
             return DeliveryType.CAR;
-        }else{
+        } else {
             return null;
         }
     }

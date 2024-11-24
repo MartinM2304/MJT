@@ -28,7 +28,7 @@ public class ControlCenter implements ControlCenterApi {
             throw new IllegalArgumentException("mapLayout cannot be null");
         }
         this.mapLayout = mapLayout;
-        restaurantsPaths=new HashMap<>();
+        restaurantsPaths = new HashMap<>();
     }
 
     private DeliveryInfo getFastestDeliveryGuy(MapEntity client, MapEntity restaurant, double maxPrice) {
@@ -101,7 +101,7 @@ public class ControlCenter implements ControlCenterApi {
             deliveryInfo = getFastestDeliveryGuy(client, restaurant, maxPrice);
         } else if (shippingMethod == ShippingMethod.CHEAPEST) {
             deliveryInfo = getCheapestDelivery(client, restaurant, maxTime);
-        }else {
+        } else {
             throw new UnsupportedOperationException("there is not other shipping method than Fastest/Cheapest, if added please expand");
         }
 

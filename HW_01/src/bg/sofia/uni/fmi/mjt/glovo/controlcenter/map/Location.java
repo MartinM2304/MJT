@@ -31,22 +31,22 @@ public record Location(int x, int y) {
         return result;
     }
 
-    public static void validateLocationBasedOnMap(Location location, int limitX,int limitY){
-        if(location.x>=limitX|| location.y>=limitY){
+    public static void validateLocationBasedOnMap(Location location, int limitX, int limitY) {
+        if (location.x >= limitX || location.y >= limitY) {
             throw new IllegalArgumentException("your coordinates are not valid");
         }
     }
 
     @Override
-    public boolean equals(Object o){
-        if(this==o){
+    public boolean equals(Object o) {
+        if (this == o) {
             return true;
         }
-        if(o==null|| getClass()!= o.getClass()){
+        if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        Location other= (Location) o;
-        return (this.x==other.x&& this.y==other.y);
+        Location other = (Location) o;
+        return (this.x == other.x && this.y == other.y);
     }
 
     @Override
