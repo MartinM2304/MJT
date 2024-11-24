@@ -2,48 +2,78 @@ package bg.sofia.uni.fmi.mjt.glovo;
 
 import bg.sofia.uni.fmi.mjt.glovo.controlcenter.ControlCenter;
 import bg.sofia.uni.fmi.mjt.glovo.controlcenter.ControlCenterApi;
+import bg.sofia.uni.fmi.mjt.glovo.controlcenter.map.Location;
 import bg.sofia.uni.fmi.mjt.glovo.controlcenter.map.MapEntity;
+import bg.sofia.uni.fmi.mjt.glovo.controlcenter.map.MapEntityType;
 import bg.sofia.uni.fmi.mjt.glovo.controlcenter.map.PathFinder;
-import bg.sofia.uni.fmi.mjt.glovo.dataStructures.Pair;
 import bg.sofia.uni.fmi.mjt.glovo.delivery.Delivery;
 import bg.sofia.uni.fmi.mjt.glovo.delivery.DeliveryInfo;
-import bg.sofia.uni.fmi.mjt.glovo.delivery.DeliveryType;
 import bg.sofia.uni.fmi.mjt.glovo.delivery.ShippingMethod;
+import bg.sofia.uni.fmi.mjt.glovo.exception.InvalidMapException;
 import bg.sofia.uni.fmi.mjt.glovo.exception.NoAvailableDeliveryGuyException;
 import bg.sofia.uni.fmi.mjt.glovo.exception.InvalidOrderException;
-
-import java.util.Map;
 
 public class Glovo implements GlovoApi {
 
     private char[][] mapLayout;
-    ControlCenterApi controlCenterApi ;
-    public static boolean debug=true;
+    ControlCenterApi controlCenterApi;
+    public static boolean debug = true;
 
     public Glovo(char[][] mapLayout) {
-        if (mapLayout == null) {
-            throw new IllegalArgumentException("mapLayout cannot be null");
-        }
+        validateMap(mapLayout);
         this.mapLayout = mapLayout;
-        controlCenterApi= new ControlCenter(mapLayout);
+        controlCenterApi = new ControlCenter(mapLayout);
     }
 
-    private void validate(MapEntity client, MapEntity restaurant, String foodItem) {
-        if (client == null) {
-            throw new IllegalArgumentException("client is null");
+    private void validateMap(char[][] mapLayout) {
+        if (mapLayout == null) {
+            throw new InvalidMapException("mapLayout cannot be null");
         }
-        if (restaurant == null) {
-            throw new IllegalArgumentException("restaurant is null");
+        int rows = mapLayout.length;
+        int columns = 0;
+        for (int i = 0; i < rows; i++) {
+            if (mapLayout[i] == null) {
+                throw new InvalidMapException("the " + i + "'th row is null");
+            }
+            if (i == 0) {
+                columns = mapLayout[0].length;
+            }
+            if (columns != mapLayout[i].length) {
+                throw new InvalidMapException("the " + i + "'th rows length is different than the rest");
+            }
         }
+    }
+
+    private void validateClient(MapEntity client){
+        if(client==null){
+            throw new InvalidOrderException("client is null");
+        }
+        if(client.type()!= MapEntityType.CLIENT||PathFinder.getEntityFromLocation(client.location(),mapLayout).type()!=MapEntityType.CLIENT){
+            throw new InvalidOrderException("clients type is not client or the coordinates doesnt correspond to a client");
+        }
+        Location.validateLocationBasedOnMap(client.location(),mapLayout.length,mapLayout[0].length);
+    }
+
+    private void validateRestaurant(MapEntity restaurant){
+        if(restaurant==null){
+            throw new InvalidOrderException("restaurant is null");
+        }
+        if(restaurant.type()!= MapEntityType.RESTAURANT||PathFinder.getEntityFromLocation(restaurant.location(),mapLayout).type()!=MapEntityType.RESTAURANT){
+            throw new InvalidOrderException("restaurant type is not client or the coordinates doesnt correspond to a restaurant");
+        }
+        Location.validateLocationBasedOnMap(restaurant.location(),mapLayout.length,mapLayout[0].length);
+    }
+    private void validateDelivery(MapEntity client, MapEntity restaurant, String foodItem) {
+        validateClient(client);
+        validateRestaurant(restaurant);
+
         if (foodItem == null || foodItem.isBlank()) {
             throw new IllegalArgumentException("foodItem is null or blank");
         }
     }
 
     //TODO REMOVE IF NEEDED
-
-
-    private Delivery returnDelivery(DeliveryInfo deliveryInfo, MapEntity client, MapEntity restaurant, String foodItem)throws NoAvailableDeliveryGuyException{
+    private Delivery returnDelivery(DeliveryInfo deliveryInfo, MapEntity client, MapEntity restaurant, String foodItem) throws NoAvailableDeliveryGuyException {
         if (deliveryInfo == null) {
             throw new NoAvailableDeliveryGuyException("There is no free deliveryGuy now");
         }
@@ -67,26 +97,15 @@ public class Glovo implements GlovoApi {
      */
     public Delivery getCheapestDelivery(MapEntity client, MapEntity restaurant, String foodItem)
             throws NoAvailableDeliveryGuyException {
-        validate(client, restaurant, foodItem);
+        validateDelivery(client, restaurant, foodItem);
 
         DeliveryInfo deliveryInfo = null;
         deliveryInfo = controlCenterApi.findOptimalDeliveryGuy(restaurant.location(), client.location(), -1, -1, ShippingMethod.CHEAPEST);
-        if(Glovo.debug && deliveryInfo==null){
+        if (Glovo.debug && deliveryInfo == null) {
             System.out.println("getCheapestDelivery null");
         }
         controlCenterApi.getLayout();
-        return returnDelivery(deliveryInfo,client,restaurant,foodItem);
-
-//        if (!restaurantsPaths.containsKey(restaurant)) {
-//            initRestaurantPaths(client, restaurant, mapLayout);
-//        } else {
-//            restaurantsPaths.get(restaurant).updateClient(client);
-//        }
-//        Pair<MapEntity, Integer> deliveryGuyAndPricePair = restaurantsPaths.get(restaurant).getDeliveryGuyBasedOnCriteria(ShippingMethod.CHEAPEST);
-//        //Bike will always be the cheapest way
-//        double price = deliveryGuyAndPricePair.second * DeliveryType.BIKE.getPricePerKilometer();
-//        int time = deliveryGuyAndPricePair.second * DeliveryType.BIKE.getTimePerKilometer();
-//        return new Delivery(client.location(), restaurant.location(), deliveryGuyAndPricePair.first.location(), foodItem, price, time);
+        return returnDelivery(deliveryInfo, client, restaurant, foodItem);
     }
 
     /**
@@ -105,24 +124,12 @@ public class Glovo implements GlovoApi {
      */
     public Delivery getFastestDelivery(MapEntity client, MapEntity restaurant, String foodItem)
             throws NoAvailableDeliveryGuyException {
-        validate(client, restaurant, foodItem);
+        validateDelivery(client, restaurant, foodItem);
 
-        DeliveryInfo deliveryInfo=null;
+        DeliveryInfo deliveryInfo = null;
         deliveryInfo = controlCenterApi.findOptimalDeliveryGuy(restaurant.location(), client.location(), -1, -1, ShippingMethod.FASTEST);
 
-        return returnDelivery(deliveryInfo,client,restaurant,foodItem);
-
-//        if (!restaurantsPaths.containsKey(restaurant)) {
-//            initRestaurantPaths(client, restaurant, mapLayout);
-//        } else {
-//            restaurantsPaths.get(restaurant).updateClient(client);
-//        }
-//
-//        Pair<MapEntity, Integer> deliveryGuyAndPricePair = restaurantsPaths.get(restaurant).getDeliveryGuyBasedOnCriteria(ShippingMethod.FASTEST);
-//        //Car will always be the cheapest way
-//        double price = deliveryGuyAndPricePair.second * DeliveryType.CAR.getPricePerKilometer();
-//        int time = deliveryGuyAndPricePair.second * DeliveryType.CAR.getTimePerKilometer();
-//        return new Delivery(client.location(), restaurant.location(), deliveryGuyAndPricePair.first.location(), foodItem, price, time);
+        return returnDelivery(deliveryInfo, client, restaurant, foodItem);
     }
 
     /**
@@ -142,34 +149,11 @@ public class Glovo implements GlovoApi {
      */
     public Delivery getFastestDeliveryUnderPrice(MapEntity client, MapEntity restaurant, String foodItem, double maxPrice)
             throws NoAvailableDeliveryGuyException {
-        validate(client, restaurant, foodItem);
+        validateDelivery(client, restaurant, foodItem);
 
-        DeliveryInfo deliveryInfo=null;
+        DeliveryInfo deliveryInfo = null;
         deliveryInfo = controlCenterApi.findOptimalDeliveryGuy(restaurant.location(), client.location(), maxPrice, -1, ShippingMethod.FASTEST);
-        return returnDelivery(deliveryInfo,client,restaurant,foodItem);
-
-//        if (!restaurantsPaths.containsKey(restaurant)) {
-//            initRestaurantPaths(client, restaurant, mapLayout);
-//        } else {
-//            restaurantsPaths.get(restaurant).updateClient(client);
-//        }
-//
-//        Pair<MapEntity, Integer> deliveryGuyAndPricePair = restaurantsPaths.get(restaurant).getDeliveryGuyBasedOnCriteria(ShippingMethod.FASTEST);
-//        //Car will always be the cheapest way
-//        double price = deliveryGuyAndPricePair.second * DeliveryType.CAR.getPricePerKilometer();
-//        int time = deliveryGuyAndPricePair.second * DeliveryType.CAR.getTimePerKilometer();
-//
-//        Delivery result = null;
-//        if (price > maxPrice) {
-//            result = getCheapestDelivery(client, restaurant, foodItem);
-//            if (result.getPrice() > maxPrice) {
-//                throw new NoAvailableDeliveryGuyException("There is no delivery guy who can fulfil the delivery for your price");
-//            }
-//        } else {
-//            result = new Delivery(client.location(), restaurant.location(), deliveryGuyAndPricePair.first.location(), foodItem, price, time);
-//        }
-//
-//        return result;
+        return returnDelivery(deliveryInfo, client, restaurant, foodItem);
     }
 
     /**
@@ -189,33 +173,10 @@ public class Glovo implements GlovoApi {
      */
     public Delivery getCheapestDeliveryWithinTimeLimit(MapEntity client, MapEntity restaurant, String foodItem, int maxTime)
             throws NoAvailableDeliveryGuyException {
-        validate(client, restaurant, foodItem);
+        validateDelivery(client, restaurant, foodItem);
 
-        DeliveryInfo deliveryInfo=null;
+        DeliveryInfo deliveryInfo = null;
         deliveryInfo = controlCenterApi.findOptimalDeliveryGuy(restaurant.location(), client.location(), -1, maxTime, ShippingMethod.CHEAPEST);
-        return returnDelivery(deliveryInfo,client,restaurant,foodItem);
-
-//        if (!restaurantsPaths.containsKey(restaurant)) {
-//            initRestaurantPaths(client, restaurant, mapLayout);
-//        } else {
-//            restaurantsPaths.get(restaurant).updateClient(client);
-//        }
-//
-//        Pair<MapEntity, Integer> deliveryGuyAndPricePair = restaurantsPaths.get(restaurant).getDeliveryGuyBasedOnCriteria(ShippingMethod.CHEAPEST);
-//        //Car will always be the cheapest way
-//        double price = deliveryGuyAndPricePair.second * DeliveryType.BIKE.getPricePerKilometer();
-//        int time = deliveryGuyAndPricePair.second * DeliveryType.BIKE.getTimePerKilometer();
-//
-//        Delivery result = null;
-//        if (time > maxTime) {
-//            result = getFastestDelivery(client, restaurant, foodItem);
-//            if (result.getEstimatedTime() > maxTime) {
-//                throw new NoAvailableDeliveryGuyException("There is no delivery guy who can fulfil the delivery for your time");
-//            }
-//        } else {
-//            result = new Delivery(client.location(), restaurant.location(), deliveryGuyAndPricePair.first.location(), foodItem, price, time);
-//        }
-//
-//        return result;
+        return returnDelivery(deliveryInfo, client, restaurant, foodItem);
     }
 }

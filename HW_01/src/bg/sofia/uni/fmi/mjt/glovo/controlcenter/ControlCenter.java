@@ -5,12 +5,9 @@ import bg.sofia.uni.fmi.mjt.glovo.controlcenter.map.MapEntity;
 import bg.sofia.uni.fmi.mjt.glovo.controlcenter.map.MapEntityType;
 import bg.sofia.uni.fmi.mjt.glovo.controlcenter.map.PathFinder;
 import bg.sofia.uni.fmi.mjt.glovo.dataStructures.Pair;
-import bg.sofia.uni.fmi.mjt.glovo.delivery.Delivery;
 import bg.sofia.uni.fmi.mjt.glovo.delivery.DeliveryInfo;
 import bg.sofia.uni.fmi.mjt.glovo.delivery.DeliveryType;
 import bg.sofia.uni.fmi.mjt.glovo.delivery.ShippingMethod;
-import bg.sofia.uni.fmi.mjt.glovo.exception.InvalidOrderException;
-import bg.sofia.uni.fmi.mjt.glovo.exception.NoAvailableDeliveryGuyException;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -89,10 +86,6 @@ public class ControlCenter implements ControlCenterApi {
      */
     public DeliveryInfo findOptimalDeliveryGuy(Location restaurantLocation, Location clientLocation,
                                                double maxPrice, int maxTime, ShippingMethod shippingMethod) {
-        // if shipping=fast:
-        //find fastest, if too expensive find fastest with maxPrice
-        //if shippin=cheap
-        //find cheapest, if too swol find cheapest with MaxTime
         MapEntity client = new MapEntity(clientLocation, MapEntityType.CLIENT);
         MapEntity restaurant = new MapEntity(restaurantLocation, MapEntityType.RESTAURANT);
 
@@ -113,29 +106,6 @@ public class ControlCenter implements ControlCenterApi {
         }
 
         return deliveryInfo;
-
-
-//        MapEntity client = new MapEntity(clientLocation, MapEntityType.CLIENT);
-//        MapEntity restaurant = new MapEntity(restaurantLocation, MapEntityType.RESTAURANT);
-//        Delivery delivery=null;
-//
-//        if (shippingMethod == ShippingMethod.FASTEST) {
-//            if(maxPrice==-1) {
-//                delivery = getFastestDeliveryGuy(client, restaurant);
-//            }else{
-//                delivery=getFastestDeliveryWithMaxPrice(client,restaurant,maxPrice);
-//            }
-//        }else if(shippingMethod==ShippingMethod.CHEAPEST){
-//            if(maxTime==-1){
-//                delivery=getCheapestDelivery(client,restaurant);
-//            }else {
-//                delivery=getCheapestDeliveryGuyWithTimeRange(client,restaurant,maxTime);
-//            }
-//        }else {
-//            throw new UnsupportedOperationException("cannot have other type of shipping method");
-//        }
-//
-//        return new DeliveryInfo(delivery);
     }
 
     /**
