@@ -5,6 +5,7 @@ import bg.sofia.uni.fmi.mjt.glovo.GlovoApi;
 import bg.sofia.uni.fmi.mjt.glovo.controlcenter.map.Location;
 import bg.sofia.uni.fmi.mjt.glovo.controlcenter.map.MapEntity;
 import bg.sofia.uni.fmi.mjt.glovo.controlcenter.map.MapEntityType;
+import bg.sofia.uni.fmi.mjt.glovo.controlcenter.map.PathFinder;
 import bg.sofia.uni.fmi.mjt.glovo.delivery.Delivery;
 import bg.sofia.uni.fmi.mjt.glovo.delivery.DeliveryInfo;
 import bg.sofia.uni.fmi.mjt.glovo.delivery.DeliveryType;
@@ -51,6 +52,30 @@ public class ControlCenter implements ControlCenterApi {
         return result;
     }
 
+    private Delivery getCheapestDelivery(MapEntity client,MapEntity restaurant){
+        Delivery result;
+
+        try {
+            result=glovo.getCheapestDelivery(client,restaurant,"Unknown");
+        }catch (NoAvailableDeliveryGuyException e){
+            System.out.println("There is no available deliveryGuy now, try again later");//if it was multitheradi easy solution, now ddz
+            throw new UnsupportedOperationException("Not implemented");
+        }
+        return result;
+    }
+
+    private Delivery getCheapestDeliveryGuyWithTimeRange(MapEntity client, MapEntity restaurant,int time) {
+        Delivery result;
+        try {
+            result= glovo.getCheapestDeliveryWithinTimeLimit(client, restaurant, "Unknown",time);//the foodItem is not used
+        } catch (NoAvailableDeliveryGuyException e) {
+            System.out.println("There is no available deliveryGuy now, try again later");//if it was multitheradi easy solution, now ddz
+            throw  new UnsupportedOperationException("getCheapestDeliveryGuyWithTimeRange no free guys");
+        }
+
+        return result;
+    }
+
     /**
      * Finds the optimal delivery person for a given delivery task. The method
      * selects the best delivery option based on the provided cost and time constraints.
@@ -77,19 +102,21 @@ public class ControlCenter implements ControlCenterApi {
 
         if (shippingMethod == ShippingMethod.FASTEST) {
             if(maxPrice==-1) {
-                delivery = glovo.getFastestDelivery(client, restaurant,"Unknown");
+                delivery = getFastestDeliveryGuy(client, restaurant);
             }else{
                 delivery=getFastestDeliveryWithMaxPrice(client,restaurant,maxPrice);
             }
         }else if(shippingMethod==ShippingMethod.CHEAPEST){
             if(maxTime==-1){
-                delivery=
+                delivery=getCheapestDelivery(client,restaurant);
+            }else {
+                delivery=getCheapestDeliveryGuyWithTimeRange(client,restaurant,maxTime);
             }
         }else {
             throw new UnsupportedOperationException("cannot have other type of shipping method");
         }
 
-        return new DeliveryInfo(delivery)
+        return new DeliveryInfo(delivery);
     }
 
     /**
@@ -99,5 +126,15 @@ public class ControlCenter implements ControlCenterApi {
      */
     public MapEntity[][] getLayout() {
         //TODO
+        int rows=mapLayout.length;
+        int columns=mapLayout[0].length;
+        MapEntity[][]layout=new MapEntity[rows][];
+        for(int i=0;i<rows;i++){
+            layout[i]=new MapEntity[columns];
+            for(int j=0;j<columns;j++){
+                layout[i][j]= PathFinder.getEntityFromLocation(new Location(i,j),mapLayout);
+            }
+        }
+        return layout;
     }
 }

@@ -17,7 +17,7 @@ public class Glovo implements GlovoApi {
     /*
      * Used for optimization so if once all the paths from the specific restaurant have been found
      * To not run the algorithm to find paths( it works because the starting positions of neither is changing)
-     * PathFinder contains all the paths from the specified restaurant to the rest restaurants
+     * PathFinder contains all the paths from the specified restaurant to the rest MapEntities
      * and the paths from the restaurant to the closest car/bike deliveryGuys
      */
     private Map<MapEntity, PathFinder> restaurantsPaths;

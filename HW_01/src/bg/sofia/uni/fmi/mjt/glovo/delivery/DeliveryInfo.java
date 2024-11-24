@@ -7,4 +7,8 @@ public record DeliveryInfo(Location deliveryGuyLocation, double price, int estim
     public DeliveryInfo{
         //TODO validate
     }
+
+    public DeliveryInfo(Delivery delivery){
+        this(delivery.getDeliveryGuyLocation(),delivery.getPrice(),delivery.getEstimatedTime(),delivery.getDeliveryType());
+    }
 }

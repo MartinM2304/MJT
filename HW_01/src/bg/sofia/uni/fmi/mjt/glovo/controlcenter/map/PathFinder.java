@@ -37,11 +37,16 @@ public class PathFinder {
         findAllPathsInMap();
     }
 
-    private MapEntity getEntityFromLocation(Location location) {
+    //TODO ask if it is good like that
+    public static MapEntity getEntityFromLocation(Location location, char[][] map) {
         int x = location.x();
         int y = location.y();
         MapEntityType type = MapEntityType.fromChar(map[x][y]);
         return new MapEntity(location, type);
+    }
+
+    private MapEntity getEntityFromLocation(Location location) {
+        return getEntityFromLocation(location, map);
     }
 
     /*
@@ -62,23 +67,29 @@ public class PathFinder {
         while (!queue.isEmpty()) {
             MapEntity current = queue.peek();
             queue.poll();
-            for (Location location : current.getNeighbors(rows, columns)) {
+            for (Location neighborLocation : current.getNeighbors(rows, columns)) {
 
-                MapEntity neighbor = getEntityFromLocation(location);
+                MapEntity neighbor = getEntityFromLocation(neighborLocation);
 
                 if (neighbor.type() == MapEntityType.WALL) {
                     continue;
                 }
                 int currentDistance = distances.get(current.location()) + 1;
 
-                if (distances.containsKey(location)) {
-                    if (currentDistance >= distances.get(location)) {
-                        currentDistance = distances.get(location);// more reusability of code
+                // we already visited this node
+                if (distances.containsKey(neighborLocation)) {
+                    int oldDistance = distances.get(neighborLocation);
+                    if (currentDistance < oldDistance) {
+                        queue.add(neighbor);
+                        distances.put(neighbor.location(), currentDistance);
+                        updateClosestBikeAndCar(neighbor, currentDistance);
                     }
-                }
-                distances.put(location, currentDistance);
-                updateClosestBikeAndCar(neighbor, currentDistance);
 
+                } else {
+                    queue.add(neighbor);
+                    distances.put(neighbor.location(), currentDistance);
+                    updateClosestBikeAndCar(neighbor, currentDistance);
+                }
             }
         }
         restaurantToClientKilometers = distances.get(client.location());
