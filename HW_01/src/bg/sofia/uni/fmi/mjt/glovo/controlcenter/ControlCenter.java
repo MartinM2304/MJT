@@ -38,7 +38,7 @@ public class ControlCenter implements ControlCenterApi {
 
         DeliveryInfo deliveryInfo = null;
         if (maxPrice == -1 || price <= maxPrice) {
-            return new DeliveryInfo(deliveryGuyAndPath.first.location(), price, time, DeliveryType.CAR);
+            return new DeliveryInfo(deliveryGuyAndPath.first.location(), price, time, deliveryGuyAndPath.first.type().getDeliveryTypeIfCarOrBike());
         }
 
         deliveryInfo = getCheapestDelivery(client, restaurant, -1);
@@ -56,7 +56,7 @@ public class ControlCenter implements ControlCenterApi {
 
         DeliveryInfo deliveryInfo = null;
         if (maxTime == -1 || time <= maxTime) {
-            return new DeliveryInfo(deliveryGuyAndPath.first.location(), price, time, DeliveryType.BIKE);
+            return new DeliveryInfo(deliveryGuyAndPath.first.location(), price, time, deliveryGuyAndPath.first.type().getDeliveryTypeIfCarOrBike());
         }
 
         deliveryInfo = getFastestDeliveryGuy(client, restaurant, -1);
