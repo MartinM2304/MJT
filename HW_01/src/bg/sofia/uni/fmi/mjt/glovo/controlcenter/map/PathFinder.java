@@ -4,6 +4,7 @@ import bg.sofia.uni.fmi.mjt.glovo.Glovo;
 import bg.sofia.uni.fmi.mjt.glovo.dataStructures.Pair;
 import bg.sofia.uni.fmi.mjt.glovo.delivery.DeliveryType;
 import bg.sofia.uni.fmi.mjt.glovo.delivery.ShippingMethod;
+import bg.sofia.uni.fmi.mjt.glovo.exception.ClientNotAccessibleException;
 
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -42,6 +43,7 @@ public class PathFinder {
         int x = location.x();
         int y = location.y();
         MapEntityType type = MapEntityType.fromChar(map[x][y]);
+
         if (Glovo.debug && type == MapEntityType.CLIENT) {
             System.out.printf("x= %d : y= %s\n", x, y);
         }
@@ -94,6 +96,9 @@ public class PathFinder {
                     updateClosestBikeAndCar(neighbor, currentDistance);
                 }
             }
+        }
+        if (!distances.containsKey(client.location())) {
+            throw new ClientNotAccessibleException("client is not accesiblee");
         }
         restaurantToClientKilometers = distances.get(client.location());
     }
