@@ -15,7 +15,7 @@ import bg.sofia.uni.fmi.mjt.glovo.exception.InvalidOrderException;
 
 public class Glovo implements GlovoApi {
 
-    private char[][] mapLayout;
+    private final char[][] mapLayout;
     ControlCenterApi controlCenterApi;
     public static boolean debug = true;
 
@@ -48,8 +48,10 @@ public class Glovo implements GlovoApi {
         if (client == null) {
             throw new InvalidOrderException("client is null");
         }
-        if (client.type() != MapEntityType.CLIENT || PathFinder.getEntityFromLocation(client.location(), mapLayout).type() != MapEntityType.CLIENT) {
-            throw new InvalidOrderException("clients type is not client or the coordinates doesnt correspond to a client");
+        if (client.type() != MapEntityType.CLIENT
+                || PathFinder.getEntityFromLocation(client.location(), mapLayout).type() != MapEntityType.CLIENT) {
+            throw new InvalidOrderException(
+                    "clients type is not client or the coordinates doesnt correspond to a client");
         }
         Location.validateLocationBasedOnMap(client.location(), mapLayout.length, mapLayout[0].length);
     }
@@ -58,8 +60,11 @@ public class Glovo implements GlovoApi {
         if (restaurant == null) {
             throw new InvalidOrderException("restaurant is null");
         }
-        if (restaurant.type() != MapEntityType.RESTAURANT || PathFinder.getEntityFromLocation(restaurant.location(), mapLayout).type() != MapEntityType.RESTAURANT) {
-            throw new InvalidOrderException("restaurant type is not client or the coordinates doesnt correspond to a restaurant");
+        if (restaurant.type() != MapEntityType.RESTAURANT
+                || PathFinder.getEntityFromLocation(restaurant.location(), mapLayout).type()
+                != MapEntityType.RESTAURANT) {
+            throw new InvalidOrderException(
+                    "restaurant type is not client or the coordinates doesnt correspond to a restaurant");
         }
         Location.validateLocationBasedOnMap(restaurant.location(), mapLayout.length, mapLayout[0].length);
     }
@@ -74,7 +79,8 @@ public class Glovo implements GlovoApi {
     }
 
     //TODO REMOVE IF NEEDED
-    private Delivery returnDelivery(DeliveryInfo deliveryInfo, MapEntity client, MapEntity restaurant, String foodItem) throws NoAvailableDeliveryGuyException {
+    private Delivery returnDelivery(DeliveryInfo deliveryInfo, MapEntity client, MapEntity restaurant, String foodItem)
+            throws NoAvailableDeliveryGuyException {
         if (deliveryInfo == null) {
             throw new NoAvailableDeliveryGuyException("There is no free deliveryGuy now");
         }
@@ -101,7 +107,8 @@ public class Glovo implements GlovoApi {
         validateDelivery(client, restaurant, foodItem);
 
         DeliveryInfo deliveryInfo = null;
-        deliveryInfo = controlCenterApi.findOptimalDeliveryGuy(restaurant.location(), client.location(), -1, -1, ShippingMethod.CHEAPEST);
+        deliveryInfo = controlCenterApi.findOptimalDeliveryGuy(
+                restaurant.location(), client.location(), -1, -1, ShippingMethod.CHEAPEST);
         if (Glovo.debug && deliveryInfo == null) {
             System.out.println("getCheapestDelivery null");
         }
@@ -128,7 +135,8 @@ public class Glovo implements GlovoApi {
         validateDelivery(client, restaurant, foodItem);
 
         DeliveryInfo deliveryInfo = null;
-        deliveryInfo = controlCenterApi.findOptimalDeliveryGuy(restaurant.location(), client.location(), -1, -1, ShippingMethod.FASTEST);
+        deliveryInfo = controlCenterApi.findOptimalDeliveryGuy(
+                restaurant.location(), client.location(), -1, -1, ShippingMethod.FASTEST);
 
         return returnDelivery(deliveryInfo, client, restaurant, foodItem);
     }
@@ -148,12 +156,14 @@ public class Glovo implements GlovoApi {
      *                                         on the map,or if the location is outside the map's defined boundaries.
      * @throws NoAvailableDeliveryGuyException If no delivery guys are available to complete the delivery.
      */
-    public Delivery getFastestDeliveryUnderPrice(MapEntity client, MapEntity restaurant, String foodItem, double maxPrice)
+    public Delivery getFastestDeliveryUnderPrice(MapEntity client, MapEntity restaurant
+            , String foodItem, double maxPrice)
             throws NoAvailableDeliveryGuyException {
         validateDelivery(client, restaurant, foodItem);
 
         DeliveryInfo deliveryInfo = null;
-        deliveryInfo = controlCenterApi.findOptimalDeliveryGuy(restaurant.location(), client.location(), maxPrice, -1, ShippingMethod.FASTEST);
+        deliveryInfo = controlCenterApi.findOptimalDeliveryGuy(
+                restaurant.location(), client.location(), maxPrice, -1, ShippingMethod.FASTEST);
         return returnDelivery(deliveryInfo, client, restaurant, foodItem);
     }
 
@@ -172,12 +182,14 @@ public class Glovo implements GlovoApi {
      *                                         on the map, or if the location is outside the map's defined boundaries.
      * @throws NoAvailableDeliveryGuyException If no delivery guys are available to complete the delivery.
      */
-    public Delivery getCheapestDeliveryWithinTimeLimit(MapEntity client, MapEntity restaurant, String foodItem, int maxTime)
+    public Delivery getCheapestDeliveryWithinTimeLimit(MapEntity client, MapEntity restaurant
+            , String foodItem, int maxTime)
             throws NoAvailableDeliveryGuyException {
         validateDelivery(client, restaurant, foodItem);
 
         DeliveryInfo deliveryInfo = null;
-        deliveryInfo = controlCenterApi.findOptimalDeliveryGuy(restaurant.location(), client.location(), -1, maxTime, ShippingMethod.CHEAPEST);
+        deliveryInfo = controlCenterApi.findOptimalDeliveryGuy(
+                restaurant.location(), client.location(), -1, maxTime, ShippingMethod.CHEAPEST);
         return returnDelivery(deliveryInfo, client, restaurant, foodItem);
     }
 }

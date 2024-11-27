@@ -13,7 +13,8 @@ public class Delivery {
     private int estimatedTime;
     private DeliveryType deliveryType;
 
-    public Delivery(Location client, Location restaurant, Location deliveryGuy, String foodItem, double price, int estimatedTime) {
+    public Delivery(Location client, Location restaurant, Location deliveryGuy
+            , String foodItem, double price, int estimatedTime) {
         validate(client, restaurant, deliveryGuy, foodItem, price, estimatedTime);
         this.client = client;
         this.restaurant = restaurant;
@@ -24,11 +25,13 @@ public class Delivery {
     }
 
     public Delivery(DeliveryInfo deliveryInfo, Location client, Location restaurant, String foodItem) {
-        this(client, restaurant, deliveryInfo.deliveryGuyLocation(), foodItem, deliveryInfo.price(), deliveryInfo.estimatedTime());
+        this(client, restaurant, deliveryInfo.deliveryGuyLocation(), foodItem
+                , deliveryInfo.price(), deliveryInfo.estimatedTime());
         this.deliveryType = deliveryInfo.deliveryType();
     }
 
-    private void validate(Location client, Location restaurant, Location deliveryGuy, String foodItem, double price, int estimated) {
+    private void validate(Location client, Location restaurant, Location deliveryGuy
+            , String foodItem, double price, int estimated) {
         //TODO ask if shoul be in one if or more than 1
         if (client == null || restaurant == null || deliveryGuy == null) {
             throw new IllegalArgumentException("client/restaurant/deliveryGuy is null");
@@ -69,14 +72,9 @@ public class Delivery {
 
     @Override
     public String toString() {
-        return "Delivery{" +
-                "client=" + client +
-                ", restaurant=" + restaurant +
-                ", deliveryGuy=" + deliveryGuy +
-                ", foodItem='" + foodItem + '\'' +
-                ", price=" + price +
-                ", estimatedTime=" + estimatedTime +
-                ", deliveryType=" + deliveryType +
-                '}';
+        return "Delivery{" + "client=" + client + ", restaurant=" + restaurant
+                + ", deliveryGuy=" + deliveryGuy + ", foodItem='" + foodItem
+                + '\'' + ", price=" + price + ", estimatedTime=" + estimatedTime
+                + ", deliveryType=" + deliveryType + '}';
     }
 }

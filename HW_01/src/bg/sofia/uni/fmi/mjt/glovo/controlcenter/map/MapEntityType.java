@@ -2,7 +2,6 @@ package bg.sofia.uni.fmi.mjt.glovo.controlcenter.map;
 
 import bg.sofia.uni.fmi.mjt.glovo.delivery.DeliveryType;
 
-
 //TODO ask if enums should be tested
 public enum MapEntityType {
     ROAD('.'),

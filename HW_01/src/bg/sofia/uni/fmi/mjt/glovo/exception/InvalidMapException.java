@@ -1,7 +1,7 @@
 package bg.sofia.uni.fmi.mjt.glovo.exception;
 
-public class InvalidMapException extends RuntimeException{
-    public InvalidMapException(String message){
+public class InvalidMapException extends RuntimeException {
+    public InvalidMapException(String message) {
         super(message);
     }
 

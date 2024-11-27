@@ -1,6 +1,7 @@
 package bg.sofia.uni.fmi.mjt.glovo.controlcenter.map;
 
 import java.util.List;
+import java.util.Objects;
 
 public record MapEntity(Location location, MapEntityType type) {
 
@@ -25,5 +26,10 @@ public record MapEntity(Location location, MapEntityType type) {
         MapEntity other = (MapEntity) o;
         return (this.location.equals(other.location) && this.type == other.type);
 
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(location, type);
     }
 }

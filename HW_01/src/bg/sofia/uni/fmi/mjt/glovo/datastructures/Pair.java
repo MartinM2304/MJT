@@ -1,8 +1,8 @@
-package bg.sofia.uni.fmi.mjt.glovo.dataStructures;
+package bg.sofia.uni.fmi.mjt.glovo.datastructures;
 
-import java.util.Comparator;
 import java.util.Objects;
 
+//TODO ask how to name package
 public class Pair<T, S> {
     public T first;
     public S second;
@@ -20,18 +20,18 @@ public class Pair<T, S> {
 
     @Override
     public boolean equals(Object o) {
-        if(this==o){
+        if (this == o) {
             return true;
         }
-        if(o==null|| o.getClass()!= getClass()){
+        if (o == null || o.getClass() != getClass()) {
             return false;
         }
-        Pair<?,?>casted=(Pair<?, ?>) o;
-        return Objects.equals(casted.first,first)&& Objects.equals(casted.second,second);
+        Pair<?, ?> casted = (Pair<?, ?>) o;
+        return Objects.equals(casted.first, first) && Objects.equals(casted.second, second);
     }
 
     @Override
-    public int hashCode(){
+    public int hashCode() {
         //return Objects.hashCode(first,second);//TODO how was the method to hash more than one obj
         return 0;
     }
