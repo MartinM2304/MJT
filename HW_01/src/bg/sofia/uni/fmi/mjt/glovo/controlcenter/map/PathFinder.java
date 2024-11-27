@@ -54,6 +54,13 @@ public class PathFinder {
         return getEntityFromLocation(location, map);
     }
 
+    private void updateRestaurantToClientKilometers() {
+        if (!distances.containsKey(client.location())) {
+            throw new ClientNotAccessibleException("client is not accesiblee");
+        }
+        restaurantToClientKilometers = distances.get(client.location());
+    }
+
     /*
      * Iterates through the whole map and finds the shortest path between the client and the restaurant
      * and finds the closes delivery guy with car/bike to the restaurant. It is done in the same function
@@ -78,26 +85,18 @@ public class PathFinder {
                     continue;
                 }
                 int currentDistance = distances.get(current.location()) + 1;
-
-                // we already visited this node
-                if (distances.containsKey(neighborLocation)) {
-                    int oldDistance = distances.get(neighborLocation);
-                    if (currentDistance < oldDistance) {
-                        queue.add(neighbor);
-                        distances.put(neighbor.location(), currentDistance);
-                        updateClosestBikeAndCar(neighbor, currentDistance);
-                    }
-                } else {
+                if (distances.containsKey(neighborLocation) && currentDistance < distances.get(neighborLocation)) {
+                    queue.add(neighbor);
+                    distances.put(neighbor.location(), currentDistance);
+                    updateClosestBikeAndCar(neighbor, currentDistance);
+                } else if (!distances.containsKey(neighborLocation)) {
                     queue.add(neighbor);
                     distances.put(neighbor.location(), currentDistance);
                     updateClosestBikeAndCar(neighbor, currentDistance);
                 }
             }
         }
-        if (!distances.containsKey(client.location())) {
-            throw new ClientNotAccessibleException("client is not accesiblee");
-        }
-        restaurantToClientKilometers = distances.get(client.location());
+        updateRestaurantToClientKilometers();
     }
 
     /*
