@@ -1,8 +1,7 @@
-package bg.sofia.uni.fmi.mjt.glovo.datastructures;
+package bg.sofia.uni.fmi.mjt.glovo.util;
 
 import java.util.Objects;
 
-//TODO ask how to name package
 public class Pair<T, S> {
     public T first;
     public S second;
@@ -12,7 +11,6 @@ public class Pair<T, S> {
         this.second = second;
     }
 
-    //TODO ask if it is okay or just leave java to fill them by default with null
     public Pair() {
         this.first = null;
         this.second = null;
@@ -32,8 +30,6 @@ public class Pair<T, S> {
 
     @Override
     public int hashCode() {
-        //return Objects.hashCode(first,second);//TODO how was the method to hash more than one obj
-        return 0;
+        return Objects.hash(first, second);
     }
-
 }

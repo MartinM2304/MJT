@@ -11,6 +11,14 @@ public record MapEntity(Location location, MapEntityType type) {
         }
     }
 
+    public static MapEntity getEntityFromLocation(Location location, char[][] map) {
+        int x = location.x();
+        int y = location.y();
+        MapEntityType type = MapEntityType.fromChar(map[x][y]);
+
+        return new MapEntity(location, type);
+    }
+
     public List<Location> getNeighbors(int rows, int columns) {
         return location.getNeighbors(rows, columns);
     }

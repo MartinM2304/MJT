@@ -5,7 +5,6 @@ import bg.sofia.uni.fmi.mjt.glovo.controlcenter.ControlCenterApi;
 import bg.sofia.uni.fmi.mjt.glovo.controlcenter.map.Location;
 import bg.sofia.uni.fmi.mjt.glovo.controlcenter.map.MapEntity;
 import bg.sofia.uni.fmi.mjt.glovo.controlcenter.map.MapEntityType;
-import bg.sofia.uni.fmi.mjt.glovo.controlcenter.map.PathFinder;
 import bg.sofia.uni.fmi.mjt.glovo.delivery.Delivery;
 import bg.sofia.uni.fmi.mjt.glovo.delivery.DeliveryInfo;
 import bg.sofia.uni.fmi.mjt.glovo.delivery.ShippingMethod;
@@ -25,7 +24,7 @@ public class Glovo implements GlovoApi {
         controlCenterApi = new ControlCenter(mapLayout);
     }
 
-    private void validateMap(char[][] mapLayout) {
+    public static void validateMap(char[][] mapLayout) {
         if (mapLayout == null) {
             throw new InvalidMapException("mapLayout cannot be null");
         }
@@ -41,6 +40,9 @@ public class Glovo implements GlovoApi {
             if (columns != mapLayout[i].length) {
                 throw new InvalidMapException("the " + i + "'th rows length is different than the rest");
             }
+            for (int j = 0; j < columns; j++) {
+                MapEntityType type = MapEntityType.fromChar(mapLayout[i][j]);
+            }
         }
     }
 
@@ -48,8 +50,8 @@ public class Glovo implements GlovoApi {
         if (client == null) {
             throw new InvalidOrderException("client is null");
         }
-        if (client.type() != MapEntityType.CLIENT
-                || PathFinder.getEntityFromLocation(client.location(), mapLayout).type() != MapEntityType.CLIENT) {
+        if (client.type() != MapEntityType.CLIENT || MapEntity.getEntityFromLocation(
+                client.location(), mapLayout).type() != MapEntityType.CLIENT) {
             throw new InvalidOrderException(
                     "clients type is not client or the coordinates doesnt correspond to a client");
         }
@@ -61,8 +63,8 @@ public class Glovo implements GlovoApi {
             throw new InvalidOrderException("restaurant is null");
         }
         if (restaurant.type() != MapEntityType.RESTAURANT
-                || PathFinder.getEntityFromLocation(restaurant.location(), mapLayout).type()
-                != MapEntityType.RESTAURANT) {
+                || MapEntity.getEntityFromLocation(restaurant.location(), mapLayout)
+                .type() != MapEntityType.RESTAURANT) {
             throw new InvalidOrderException(
                     "restaurant type is not client or the coordinates doesnt correspond to a restaurant");
         }
@@ -78,7 +80,6 @@ public class Glovo implements GlovoApi {
         }
     }
 
-    //TODO REMOVE IF NEEDED
     private Delivery returnDelivery(DeliveryInfo deliveryInfo, MapEntity client, MapEntity restaurant, String foodItem)
             throws NoAvailableDeliveryGuyException {
         if (deliveryInfo == null) {
@@ -109,9 +110,7 @@ public class Glovo implements GlovoApi {
         DeliveryInfo deliveryInfo = null;
         deliveryInfo = controlCenterApi.findOptimalDeliveryGuy(
                 restaurant.location(), client.location(), -1, -1, ShippingMethod.CHEAPEST);
-        if (Glovo.debug && deliveryInfo == null) {
-            System.out.println("getCheapestDelivery null");
-        }
+
         controlCenterApi.getLayout();
         return returnDelivery(deliveryInfo, client, restaurant, foodItem);
     }
@@ -183,8 +182,7 @@ public class Glovo implements GlovoApi {
      * @throws NoAvailableDeliveryGuyException If no delivery guys are available to complete the delivery.
      */
     public Delivery getCheapestDeliveryWithinTimeLimit(MapEntity client, MapEntity restaurant
-            , String foodItem, int maxTime)
-            throws NoAvailableDeliveryGuyException {
+            , String foodItem, int maxTime) throws NoAvailableDeliveryGuyException {
         validateDelivery(client, restaurant, foodItem);
 
         DeliveryInfo deliveryInfo = null;

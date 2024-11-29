@@ -4,7 +4,7 @@ import bg.sofia.uni.fmi.mjt.glovo.controlcenter.map.Location;
 import bg.sofia.uni.fmi.mjt.glovo.controlcenter.map.MapEntity;
 import bg.sofia.uni.fmi.mjt.glovo.controlcenter.map.MapEntityType;
 import bg.sofia.uni.fmi.mjt.glovo.controlcenter.map.PathFinder;
-import bg.sofia.uni.fmi.mjt.glovo.datastructures.Pair;
+import bg.sofia.uni.fmi.mjt.glovo.util.Pair;
 import bg.sofia.uni.fmi.mjt.glovo.delivery.DeliveryInfo;
 import bg.sofia.uni.fmi.mjt.glovo.delivery.ShippingMethod;
 
@@ -30,7 +30,6 @@ public class ControlCenter implements ControlCenterApi {
         restaurantsPaths = new HashMap<>();
     }
 
-    //TODO tva validno li e na nqkolko reda ?!
     private DeliveryInfo getFastestDeliveryGuy(MapEntity client, MapEntity restaurant, double maxPrice) {
         Pair<MapEntity, Integer> deliveryGuyAndPath = restaurantsPaths.get(restaurant)
                 .getDeliveryGuyBasedOnCriteria(ShippingMethod.FASTEST);
@@ -128,14 +127,13 @@ public class ControlCenter implements ControlCenterApi {
      * @return A MapEntity[][] containing the map
      */
     public MapEntity[][] getLayout() {
-        //TODO
         int rows = mapLayout.length;
         int columns = mapLayout[0].length;
         MapEntity[][] layout = new MapEntity[rows][];
         for (int i = 0; i < rows; i++) {
             layout[i] = new MapEntity[columns];
             for (int j = 0; j < columns; j++) {
-                layout[i][j] = PathFinder.getEntityFromLocation(new Location(i, j), mapLayout);
+                layout[i][j] = MapEntity.getEntityFromLocation(new Location(i, j), mapLayout);
             }
         }
         return layout;

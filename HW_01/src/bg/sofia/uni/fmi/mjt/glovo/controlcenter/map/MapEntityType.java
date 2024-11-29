@@ -2,7 +2,6 @@ package bg.sofia.uni.fmi.mjt.glovo.controlcenter.map;
 
 import bg.sofia.uni.fmi.mjt.glovo.delivery.DeliveryType;
 
-//TODO ask if enums should be tested
 public enum MapEntityType {
     ROAD('.'),
     WALL('#'),
@@ -14,7 +13,6 @@ public enum MapEntityType {
     private final char entity;
 
     MapEntityType(char entity) {
-        //TODO remove later if no validation is needed
         if (isValid(entity)) {
             this.entity = entity;
         } else {
@@ -22,7 +20,6 @@ public enum MapEntityType {
         }
     }
 
-    //TODO Mnogo sym gotin :)
     private boolean isValid(char entity) {
         return switch (entity) {
             case '.', '#', 'R', 'C', 'A', 'B' -> true;

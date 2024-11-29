@@ -7,9 +7,8 @@ public class Delivery {
     private final Location client;
     private final Location restaurant;
     private Location deliveryGuy;
-    //TODO currently not sure if food and price are const check in future
-    private String foodItem;
-    private double price;
+    private final String foodItem;
+    private final double price;
     private int estimatedTime;
     private DeliveryType deliveryType;
 
@@ -32,7 +31,6 @@ public class Delivery {
 
     private void validate(Location client, Location restaurant, Location deliveryGuy
             , String foodItem, double price, int estimated) {
-        //TODO ask if shoul be in one if or more than 1
         if (client == null || restaurant == null || deliveryGuy == null) {
             throw new IllegalArgumentException("client/restaurant/deliveryGuy is null");
         }
