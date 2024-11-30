@@ -1,79 +1,80 @@
 package bg.sofia.uni.fmi.mjt.glovo.controlcenter;
 
-import bg.sofia.uni.fmi.mjt.glovo.Glovo;
-import bg.sofia.uni.fmi.mjt.glovo.GlovoApi;
 import bg.sofia.uni.fmi.mjt.glovo.controlcenter.map.Location;
 import bg.sofia.uni.fmi.mjt.glovo.controlcenter.map.MapEntity;
 import bg.sofia.uni.fmi.mjt.glovo.controlcenter.map.MapEntityType;
 import bg.sofia.uni.fmi.mjt.glovo.controlcenter.map.PathFinder;
-import bg.sofia.uni.fmi.mjt.glovo.delivery.Delivery;
+import bg.sofia.uni.fmi.mjt.glovo.util.Pair;
 import bg.sofia.uni.fmi.mjt.glovo.delivery.DeliveryInfo;
-import bg.sofia.uni.fmi.mjt.glovo.delivery.DeliveryType;
 import bg.sofia.uni.fmi.mjt.glovo.delivery.ShippingMethod;
-import bg.sofia.uni.fmi.mjt.glovo.exception.NoAvailableDeliveryGuyException;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class ControlCenter implements ControlCenterApi {
 
-    private GlovoApi glovo;
-    private char[][] mapLayout;
+    private final char[][] mapLayout;
+    /*
+     * Used for optimization so if once all the paths from the specific restaurant have been found
+     * To not run the algorithm to find paths( it works because the starting positions of neither is changing)
+     * PathFinder contains all the paths from the specified restaurant to the rest MapEntities
+     * and the paths from the restaurant to the closest car/bike deliveryGuys
+     */
+    private final Map<MapEntity, PathFinder> restaurantsPaths;
 
     public ControlCenter(char[][] mapLayout) {
         if (mapLayout == null) {
             throw new IllegalArgumentException("mapLayout cannot be null");
         }
         this.mapLayout = mapLayout;
-        // cannot return it from Glovo as it doesnt have the method getMapLayout, TODO add it if
-        //you deside it is better
-        glovo = new Glovo(mapLayout);
+        restaurantsPaths = new HashMap<>();
     }
 
-    private Delivery getFastestDeliveryGuy(MapEntity client, MapEntity restaurant) {
-        Delivery result;
+    private DeliveryInfo getFastestDeliveryGuy(MapEntity client, MapEntity restaurant, double maxPrice) {
+        Pair<MapEntity, Integer> deliveryGuyAndPath = restaurantsPaths.get(restaurant)
+                .getDeliveryGuyBasedOnCriteria(ShippingMethod.FASTEST);
+        double price = deliveryGuyAndPath.second * deliveryGuyAndPath.first.type()
+                .getDeliveryTypeIfCarOrBike().getPricePerKilometer();
+        int time = deliveryGuyAndPath.second * deliveryGuyAndPath.first.type()
+                .getDeliveryTypeIfCarOrBike().getTimePerKilometer();
 
-        try {
-            result= glovo.getFastestDelivery(client, restaurant, "Unknown");//the foodItem is not used
-        } catch (NoAvailableDeliveryGuyException e) {
-            System.out.println("There is no available deliveryGuy now, try again later");//if it was multitheradi easy solution, now ddz
-            throw  new UnsupportedOperationException("getFastestDeliveryGuy no free guys");
+        DeliveryInfo deliveryInfo = null;
+        if (maxPrice == -1 || price <= maxPrice) {
+            return new DeliveryInfo(deliveryGuyAndPath.first.location(), price, time,
+                    deliveryGuyAndPath.first.type().getDeliveryTypeIfCarOrBike());
         }
 
-        return result;
+        deliveryInfo = getCheapestDelivery(client, restaurant, -1);
+        if (deliveryInfo.price() > maxPrice) {
+            return null;
+        }
+        return deliveryInfo;
+
     }
 
-    private Delivery getFastestDeliveryWithMaxPrice(MapEntity client, MapEntity restaurant,double maxPrice) {
-        Delivery result;
-        try {
-            result= glovo.getFastestDeliveryUnderPrice(client, restaurant, "Unknown",maxPrice);//the foodItem is not used
-        } catch (NoAvailableDeliveryGuyException e) {
-            System.out.println("There is no available deliveryGuy now, try again later");//if it was multitheradi easy solution, now ddz
-            throw  new UnsupportedOperationException("getFastestDeliveryWithMaxPrice no free guys");
+    private DeliveryInfo getCheapestDelivery(MapEntity client, MapEntity restaurant, int maxTime) {
+        Pair<MapEntity, Integer> deliveryGuyAndPath = restaurantsPaths.get(restaurant)
+                .getDeliveryGuyBasedOnCriteria(ShippingMethod.CHEAPEST);
+        double price = deliveryGuyAndPath.second * deliveryGuyAndPath.first.type()
+                .getDeliveryTypeIfCarOrBike().getPricePerKilometer();
+        int time = deliveryGuyAndPath.second * deliveryGuyAndPath.first.type()
+                .getDeliveryTypeIfCarOrBike().getTimePerKilometer();
+
+        DeliveryInfo deliveryInfo = null;
+        if (maxTime == -1 || time <= maxTime) {
+            return new DeliveryInfo(deliveryGuyAndPath.first.location(), price, time,
+                    deliveryGuyAndPath.first.type().getDeliveryTypeIfCarOrBike());
         }
 
-        return result;
+        deliveryInfo = getFastestDeliveryGuy(client, restaurant, -1);
+        if (deliveryInfo.estimatedTime() > maxTime) {
+            return null;
+        }
+        return deliveryInfo;
     }
 
-    private Delivery getCheapestDelivery(MapEntity client,MapEntity restaurant){
-        Delivery result;
-
-        try {
-            result=glovo.getCheapestDelivery(client,restaurant,"Unknown");
-        }catch (NoAvailableDeliveryGuyException e){
-            System.out.println("There is no available deliveryGuy now, try again later");//if it was multitheradi easy solution, now ddz
-            throw new UnsupportedOperationException("Not implemented");
-        }
-        return result;
-    }
-
-    private Delivery getCheapestDeliveryGuyWithTimeRange(MapEntity client, MapEntity restaurant,int time) {
-        Delivery result;
-        try {
-            result= glovo.getCheapestDeliveryWithinTimeLimit(client, restaurant, "Unknown",time);//the foodItem is not used
-        } catch (NoAvailableDeliveryGuyException e) {
-            System.out.println("There is no available deliveryGuy now, try again later");//if it was multitheradi easy solution, now ddz
-            throw  new UnsupportedOperationException("getCheapestDeliveryGuyWithTimeRange no free guys");
-        }
-
-        return result;
+    private void initRestaurantPaths(MapEntity client, MapEntity restaurant) {
+        restaurantsPaths.put(restaurant, new PathFinder(client, restaurant, mapLayout));
     }
 
     /**
@@ -91,32 +92,33 @@ public class ControlCenter implements ControlCenterApi {
      */
     public DeliveryInfo findOptimalDeliveryGuy(Location restaurantLocation, Location clientLocation,
                                                double maxPrice, int maxTime, ShippingMethod shippingMethod) {
-        // if shipping=fast:
-        //find fastest, if too expensive find fastest with maxPrice
-        //if shippin=cheap
-        //find cheapest, if too swol find cheapest with MaxTime
-        //TODO ask what to do if there is no available guy
         MapEntity client = new MapEntity(clientLocation, MapEntityType.CLIENT);
         MapEntity restaurant = new MapEntity(restaurantLocation, MapEntityType.RESTAURANT);
-        Delivery delivery=null;
 
-        if (shippingMethod == ShippingMethod.FASTEST) {
-            if(maxPrice==-1) {
-                delivery = getFastestDeliveryGuy(client, restaurant);
-            }else{
-                delivery=getFastestDeliveryWithMaxPrice(client,restaurant,maxPrice);
-            }
-        }else if(shippingMethod==ShippingMethod.CHEAPEST){
-            if(maxTime==-1){
-                delivery=getCheapestDelivery(client,restaurant);
-            }else {
-                delivery=getCheapestDeliveryGuyWithTimeRange(client,restaurant,maxTime);
-            }
-        }else {
-            throw new UnsupportedOperationException("cannot have other type of shipping method");
+        if (!restaurantsPaths.containsKey(restaurantLocation)) {
+            initRestaurantPaths(client, restaurant);
+        } else {
+            restaurantsPaths.get(restaurantLocation).updateClient(client);
         }
 
-        return new DeliveryInfo(delivery);
+        DeliveryInfo deliveryInfo = null;
+
+        if (shippingMethod == ShippingMethod.FASTEST) {
+            deliveryInfo = getFastestDeliveryGuy(client, restaurant, maxPrice);
+            if (maxTime != -1 && deliveryInfo.estimatedTime() > maxTime) {
+                return null;
+            }
+        } else if (shippingMethod == ShippingMethod.CHEAPEST) {
+            deliveryInfo = getCheapestDelivery(client, restaurant, maxTime);
+            if (maxPrice != -1 && deliveryInfo.price() > maxPrice) {
+                return null;
+            }
+        } else {
+            throw new UnsupportedOperationException(
+                    "there is not other shipping method than Fastest/Cheapest, if added please expand");
+        }
+
+        return deliveryInfo;
     }
 
     /**
@@ -125,14 +127,13 @@ public class ControlCenter implements ControlCenterApi {
      * @return A MapEntity[][] containing the map
      */
     public MapEntity[][] getLayout() {
-        //TODO
-        int rows=mapLayout.length;
-        int columns=mapLayout[0].length;
-        MapEntity[][]layout=new MapEntity[rows][];
-        for(int i=0;i<rows;i++){
-            layout[i]=new MapEntity[columns];
-            for(int j=0;j<columns;j++){
-                layout[i][j]= PathFinder.getEntityFromLocation(new Location(i,j),mapLayout);
+        int rows = mapLayout.length;
+        int columns = mapLayout[0].length;
+        MapEntity[][] layout = new MapEntity[rows][];
+        for (int i = 0; i < rows; i++) {
+            layout[i] = new MapEntity[columns];
+            for (int j = 0; j < columns; j++) {
+                layout[i][j] = MapEntity.getEntityFromLocation(new Location(i, j), mapLayout);
             }
         }
         return layout;

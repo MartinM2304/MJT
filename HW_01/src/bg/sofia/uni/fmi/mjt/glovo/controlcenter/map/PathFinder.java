@@ -1,34 +1,35 @@
 package bg.sofia.uni.fmi.mjt.glovo.controlcenter.map;
 
-import bg.sofia.uni.fmi.mjt.glovo.dataStructures.Pair;
+import bg.sofia.uni.fmi.mjt.glovo.Glovo;
+import bg.sofia.uni.fmi.mjt.glovo.util.Pair;
+import bg.sofia.uni.fmi.mjt.glovo.delivery.DeliveryType;
 import bg.sofia.uni.fmi.mjt.glovo.delivery.ShippingMethod;
+import bg.sofia.uni.fmi.mjt.glovo.exception.ClientNotAccessibleException;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Queue;
-import java.util.Set;
 
 /*
  * PathFinder contains the restaurant it was initialized with and the closest paths from this restaurant to the
  * rest of the map, including all clients and the deliveryGuys nearest to them (closest with car and closest with bike)
- * as the rest are not needed as if one delivery guys is farther he will for sure take more time and money for the delivery
- *
+ * as the rest are not needed as if one delivery guys is farther he will for sure take more time and money than the
+ * delivery guy who is closer
  */
 
 public class PathFinder {
 
-    private MapEntity restaurant;
+    private final MapEntity restaurant;
     private MapEntity client;
-    private char[][] map;
+    private final char[][] map;
     private Pair<MapEntity, Integer> closestBike;
     private Pair<MapEntity, Integer> closestCar;
     private int restaurantToClientKilometers;
     Map<Location, Integer> distances = new HashMap<>();
 
     public PathFinder(MapEntity client, MapEntity restaurant, char[][] map) {
-        //TODO add validation
+        validate(client, restaurant, map);
         this.client = client;
         this.restaurant = restaurant;
         this.map = map;
@@ -37,16 +38,25 @@ public class PathFinder {
         findAllPathsInMap();
     }
 
-    //TODO ask if it is good like that
-    public static MapEntity getEntityFromLocation(Location location, char[][] map) {
-        int x = location.x();
-        int y = location.y();
-        MapEntityType type = MapEntityType.fromChar(map[x][y]);
-        return new MapEntity(location, type);
+    private void validate(MapEntity client, MapEntity restaurant, char[][] map) {
+        Glovo.validateMap(map);
+        if (client == null || client.type() != MapEntityType.CLIENT) {
+            throw new IllegalArgumentException("clients is null or is not client");
+        }
+        if (restaurant == null || restaurant.type() != MapEntityType.RESTAURANT) {
+            throw new IllegalArgumentException("restaurant is null or is not client");
+        }
     }
 
     private MapEntity getEntityFromLocation(Location location) {
-        return getEntityFromLocation(location, map);
+        return MapEntity.getEntityFromLocation(location, map);
+    }
+
+    private void updateRestaurantToClientKilometers() {
+        if (!distances.containsKey(client.location())) {
+            throw new ClientNotAccessibleException("client is not accesiblee");
+        }
+        restaurantToClientKilometers = distances.get(client.location());
     }
 
     /*
@@ -68,35 +78,28 @@ public class PathFinder {
             MapEntity current = queue.peek();
             queue.poll();
             for (Location neighborLocation : current.getNeighbors(rows, columns)) {
-
                 MapEntity neighbor = getEntityFromLocation(neighborLocation);
-
                 if (neighbor.type() == MapEntityType.WALL) {
                     continue;
                 }
                 int currentDistance = distances.get(current.location()) + 1;
-
-                // we already visited this node
-                if (distances.containsKey(neighborLocation)) {
-                    int oldDistance = distances.get(neighborLocation);
-                    if (currentDistance < oldDistance) {
-                        queue.add(neighbor);
-                        distances.put(neighbor.location(), currentDistance);
-                        updateClosestBikeAndCar(neighbor, currentDistance);
-                    }
-
-                } else {
+                if (distances.containsKey(neighborLocation) && currentDistance < distances.get(neighborLocation)) {
+                    queue.add(neighbor);
+                    distances.put(neighbor.location(), currentDistance);
+                    updateClosestBikeAndCar(neighbor, currentDistance);
+                } else if (!distances.containsKey(neighborLocation)) {
                     queue.add(neighbor);
                     distances.put(neighbor.location(), currentDistance);
                     updateClosestBikeAndCar(neighbor, currentDistance);
                 }
             }
         }
-        restaurantToClientKilometers = distances.get(client.location());
+        updateRestaurantToClientKilometers();
     }
 
     /*
-     *   TODO add description
+     *   We only save the closest car and bike, because if one deliveryguy is further then
+     *  they for sure will be more expensive and will take more time for the delivery
      */
     private void updateClosestBikeAndCar(MapEntity entity, int currentDistance) {
         if (entity.type() == MapEntityType.DELIVERY_GUY_BIKE) {
@@ -118,24 +121,55 @@ public class PathFinder {
         return this.client;
     }
 
+    private int getDistanceWithFastShippingMethod(Pair<MapEntity, Integer> result) {
+        int timeToCar = closestCar.second * DeliveryType.CAR.getTimePerKilometer();
+        timeToCar += restaurantToClientKilometers * DeliveryType.CAR.getTimePerKilometer();
+
+        int timeToBike = closestBike.second * DeliveryType.BIKE.getTimePerKilometer();
+        timeToBike += restaurantToClientKilometers * DeliveryType.BIKE.getTimePerKilometer();
+
+        if (timeToBike > timeToCar) {
+            result.first = closestCar.first;
+            result.second += closestCar.second;
+        } else {
+            result.first = closestBike.first;
+            result.second += closestBike.second;
+        }
+
+        return result.second;
+    }
+
+    private int getDistanceWithCheapShippingMethod(Pair<MapEntity, Integer> result) {
+        int priceToCar = closestCar.second * DeliveryType.CAR.getPricePerKilometer();
+        priceToCar += restaurantToClientKilometers * DeliveryType.CAR.getPricePerKilometer();
+
+        int priceToBike = closestBike.second * DeliveryType.BIKE.getPricePerKilometer();
+        priceToBike += restaurantToClientKilometers * DeliveryType.BIKE.getPricePerKilometer();
+
+        if (priceToBike > priceToCar) {
+            result.first = closestCar.first;
+            result.second += closestCar.second;
+        } else {
+            result.first = closestBike.first;
+            result.second += closestBike.second;
+        }
+        return result.second;
+    }
+
     /*
-     * Returns pair of deliveryGuy and distance for the path
+     * Returns pair of deliveryGuy and distance of the path
      */
     public Pair<MapEntity, Integer> getDeliveryGuyBasedOnCriteria(ShippingMethod shippingMethod) {
         Pair<MapEntity, Integer> result = new Pair<>();
-        int distance = restaurantToClientKilometers;
+        result.second = restaurantToClientKilometers;
 
         if (shippingMethod == ShippingMethod.FASTEST) {
-            result.first = closestCar.first;
-            distance += closestCar.second;
+            getDistanceWithFastShippingMethod(result);
         } else if (shippingMethod == ShippingMethod.CHEAPEST) {
-            result.first = closestBike.first;
-            distance += closestBike.second;
+            getDistanceWithCheapShippingMethod(result);
         } else {
             throw new UnsupportedOperationException("cannot have other type of shipping method");
         }
-
-        result.second = distance;
         return result;
     }
 }
