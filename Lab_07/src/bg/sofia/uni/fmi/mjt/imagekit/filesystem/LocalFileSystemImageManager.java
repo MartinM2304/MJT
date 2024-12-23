@@ -21,7 +21,7 @@ public class LocalFileSystemImageManager implements FileSystemImageManager {
         if (imageFile == null) {
             throw new IllegalArgumentException("Image file is null");
         }
-        if (!imageFile.isFile()) {
+        if (!imageFile.exists()||!imageFile.isFile()) {
             throw new IOException("Invalid file: " + imageFile.getPath());
         }
 
@@ -43,49 +43,53 @@ public class LocalFileSystemImageManager implements FileSystemImageManager {
      *                                  or contains files that are not in one of the supported formats.
      */
     public List<BufferedImage> loadImagesFromDirectory(File imagesDirectory) throws IOException {
-        if (imagesDirectory == null) {
-            throw new IllegalArgumentException("Images directory cannot be null");
+        if(imagesDirectory==null){
+            throw new IllegalArgumentException("Directory is null");
         }
-        if (!imagesDirectory.isDirectory()) {
+        if (!imagesDirectory.exists()||!imagesDirectory.isDirectory()) {
             throw new IOException("Invalid directory: " + imagesDirectory.getPath());
-        }
-
-        List<BufferedImage> images = new ArrayList<>();
-        for (File file : imagesDirectory.listFiles()) {
-            try {
-                images.add(loadImage(file));
-            } catch (IOException ignored) {
-                System.out.println("exception caught");
             }
+
+            List<BufferedImage> images = new ArrayList<>();
+            for (File file : imagesDirectory.listFiles()) {
+
+                    images.add(loadImage(file));
+
+            }
+
+            return images;
         }
 
-        return images;
-    }
-
-    /**
-     * Saves the given image to the specified file path.
-     *
-     * @param image     the image to save.
-     * @param imageFile the file to save the image to.
-     * @throws IllegalArgumentException if the image or file is null.
-     * @throws IOException              if the file already exists or the parent directory does not exist.
-     */
-    public void saveImage(BufferedImage image, File imageFile) throws IOException {
-        if (image == null || imageFile == null) {
-            throw new IllegalArgumentException("Image or file cannot be null");
+        /**
+         * Saves the given image to the specified file path.
+         *
+         * @param image     the image to save.
+         * @param imageFile the file to save the image to.
+         * @throws IllegalArgumentException if the image or file is null.
+         * @throws IOException              if the file already exists or the parent directory does not exist.
+         */
+        public void saveImage(BufferedImage image, File imageFile) throws IOException {
+            if (image == null || imageFile == null) {
+                throw new IllegalArgumentException("Image or file cannot be null");
+            }
+            if (imageFile.exists()) {
+                throw new IOException("File already exists: " + imageFile.getPath());
+            }
+            File parent=imageFile.getParentFile();
+            if (parent != null && !parent.exists()) {
+                if (!parent.mkdirs()) {
+                    throw new IOException("Failed to create parent directories for file: " + imageFile.getPath());
+                }
         }
-        if (imageFile.exists()) {
-            throw new IOException("File already exists: " + imageFile.getPath());
-        }
 
-        String formatName = getFromat(imageFile.getName());
+        String formatName = getFormat(imageFile.getName());
         ImageIO.write(image, formatName, imageFile);
     }
 
-    private String getFromat(String fileName) {
+    private String getFormat(String fileName) throws IOException {
         String extension = fileName.substring(fileName.lastIndexOf('.') + 1).toLowerCase();
         if (!extension.equals("jpg") && !extension.equals("jpeg") && !extension.equals("png") && !extension.equals("bmp")) {
-            throw new IllegalArgumentException("Unsupported file format: " + extension);
+            throw new IOException("Unsupported file format: " + extension);
         }
         return extension;
     }

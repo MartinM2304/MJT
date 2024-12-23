@@ -1,7 +1,6 @@
 package bg.sofia.uni.fmi.mjt.imagekit.algorithm.detection;
 
 import bg.sofia.uni.fmi.mjt.imagekit.algorithm.ImageAlgorithm;
-import bg.sofia.uni.fmi.mjt.imagekit.algorithm.grayscale.GrayscaleAlgorithm;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
