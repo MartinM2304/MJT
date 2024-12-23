@@ -23,7 +23,7 @@ public class TextTokenizer {
     }
 
     public List<String> tokenize(String input) {
-        if (input == null || input.isBlank() || input.isEmpty()) {
+        if (input == null) {
             throw new IllegalArgumentException("input is null");
         }
 

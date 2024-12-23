@@ -45,13 +45,10 @@ public record Book(
             throw new IllegalArgumentException("Tokens array contains null elements");
         }
 
-        if (Arrays.stream(tokens).anyMatch(String::isBlank)) {
-            throw new IllegalArgumentException("Tokens array contains blank elements");
-        }
     }
 
     private void validateString(String str) {
-        if (str == null || str.isBlank() || str.isEmpty()) {
+        if (str == null) {
             throw new IllegalArgumentException("String cannot be null or blank");
         }
     }

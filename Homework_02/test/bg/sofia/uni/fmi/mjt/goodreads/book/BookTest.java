@@ -33,12 +33,6 @@ class BookTest {
     }
 
     @Test
-    void testBlankElementInTokens() {
-        String[] tokens = {"1", "Book Title", "Author", "  ", "[Fantasy,Adventure]", "4.5", "1000", "http://example.com"};
-        assertThrows(IllegalArgumentException.class, () -> Book.of(tokens),"Element cant be blank");
-    }
-
-    @Test
     void validateInvalidStringToken() {
         assertThrows(IllegalArgumentException.class, () ->new Book(null,null,null,null,null,
                 -1,-1,null),"Cant have null string");
