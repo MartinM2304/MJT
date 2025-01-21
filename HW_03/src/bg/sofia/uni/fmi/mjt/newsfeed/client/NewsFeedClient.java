@@ -4,7 +4,6 @@ import java.util.List;
 
 public class NewsFeedClient<T> implements Client<T>{
 
-    private final HTTP
 
     @Override
     public List<T> loadPages(int numPages) {
