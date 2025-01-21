@@ -162,11 +162,9 @@ public class HTTPBaseClientTest {
 
     @Test
     public void testBuilderInitializesCorrectly() {
-        // Mock dependencies
         Request mockRequest = mock(Request.class);
         Function<String, PagedResponse<String>> mockParser = mock(Function.class);
 
-        // Initialize the builder
         HTTPBaseClient.HTTPBaseClientBuilder<String> builder =
                 new HTTPBaseClient.HTTPBaseClientBuilder<>(mockRequest, mockParser);
 
@@ -175,19 +173,15 @@ public class HTTPBaseClientTest {
 
     @Test
     public void testSetClient() {
-        // Mock dependencies
         Request mockRequest = mock(Request.class);
         Function<String, PagedResponse<String>> mockParser = mock(Function.class);
         HttpClient mockHttpClient = mock(HttpClient.class);
 
-        // Initialize the builder
         HTTPBaseClient.HTTPBaseClientBuilder<String> builder =
                 new HTTPBaseClient.HTTPBaseClientBuilder<>(mockRequest, mockParser);
 
-        // Set custom HTTP client
         builder.setClient(mockHttpClient);
 
-        // Build the client
         HTTPBaseClient<String> client = builder.build();
 
         assertNotNull(client, "Client should be created successfully.");
@@ -195,19 +189,15 @@ public class HTTPBaseClientTest {
 
     @Test
     public void testSetPagesLimit() {
-        // Mock dependencies
         Request mockRequest = mock(Request.class);
         Function<String, PagedResponse<String>> mockParser = mock(Function.class);
 
-        // Initialize the builder
         HTTPBaseClient.HTTPBaseClientBuilder<String> builder =
                 new HTTPBaseClient.HTTPBaseClientBuilder<>(mockRequest, mockParser);
 
-        // Set custom pages limit
         int customPagesLimit = 10;
         builder.setPagesLimit(customPagesLimit);
 
-        // Build the client
         HTTPBaseClient<String> client = builder.build();
 
         assertNotNull(client, "Client should be created successfully.");
@@ -215,33 +205,50 @@ public class HTTPBaseClientTest {
 
     @Test
     public void testSetPagesLimitThrowsExceptionForInvalidLimit() {
-        // Mock dependencies
         Request mockRequest = mock(Request.class);
         Function<String, PagedResponse<String>> mockParser = mock(Function.class);
 
-        // Initialize the builder
         HTTPBaseClient.HTTPBaseClientBuilder<String> builder =
                 new HTTPBaseClient.HTTPBaseClientBuilder<>(mockRequest, mockParser);
 
-        // Try to set an invalid pages limit
         assertThrows(IllegalArgumentException.class, () -> builder.setPagesLimit(0),
                 "Setting a pages limit less than 1 should throw an exception.");
     }
 
     @Test
-    public void testBuildCreatesClient() throws ClientSendException,JSONParsingException{
-        // Mock dependencies
-        Request mockRequest = mock(Request.class);
-        Function<String, PagedResponse<String>> mockParser = mock(Function.class);
+    public void testBuildCreatesClient() throws ClientSendException,InterruptedException,IOException,JSONParsingException{
+        String singlePageResponseJson = """
+        {
+            "status": "ok",
+            "totalResults": 1,
+            "articles": [
+                {
+                    "source": {
+                        "id": "the-wall-street-journal",
+                        "name": "The Wall Street Journal"
+                    },
+                    "author": "The Wall Street Journal",
+                    "title": "Trump’s Executive Orders Will Focus on the Border, Energy - The Wall Street Journal",
+                    "description": null,
+                    "url": "https://www.wsj.com/politics/policy/trump-to-lay-out-trade-visionbut-wont-impose-new-tariffs-yet-b9c8378d",
+                    "urlToImage": null,
+                    "publishedAt": "2025-01-20T17:57:00Z",
+                    "content": null
+                }
+            ]
+        }
+        """;
 
-        // Initialize the builder
-        HTTPBaseClient.HTTPBaseClientBuilder<String> builder =
-                new HTTPBaseClient.HTTPBaseClientBuilder<>(mockRequest, mockParser);
+        when(mockHttpClient.send(any(HttpRequest.class), any(HttpResponse.BodyHandler.class)))
+                .thenReturn(mockHttpResponse);
+        when(mockHttpResponse.body()).thenReturn(singlePageResponseJson);
 
-        // Build the client
-        HTTPBaseClient<String> client = builder.build();
+        PagedResponse<String> mockPagedResponse = mock(PagedResponse.class);
+        when(mockPagedResponse.getData()).thenReturn(List.of(
+                "Trump’s Executive Orders Will Focus on the Border, Energy - The Wall Street Journal"));
+        when(mockParser.apply(singlePageResponseJson)).thenReturn(mockPagedResponse);
 
-        assertNotNull(client, "Client should be created successfully.");
-        assertNotNull(client.loadAll(), "Client should have a functioning 'loadAll' method.");
+        List<String> result = client.loadAll();
+        assertNotNull(result,"result should not be null");
     }
 }

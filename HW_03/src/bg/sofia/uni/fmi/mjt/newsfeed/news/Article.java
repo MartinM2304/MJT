@@ -44,7 +44,6 @@ public class Article {
         validateArticle(source, author, title, description, url, imageUrl, publishedAt, content);
         isImageLoaded=true;
         this.urlToImage=imageUrl;
-        //getImageFromUrl(imageUrl);
         getDateTime(publishedAt);
     }
 
@@ -67,10 +66,6 @@ public class Article {
     public URL getUrl() {
         return url;
     }
-
-//    public Image getImage() {
-//        return image;
-//    }
 
     public String getContent() {
         return content;

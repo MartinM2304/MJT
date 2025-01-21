@@ -1,7 +1,7 @@
 package bg.sofia.uni.fmi.mjt.newsfeed.response;
 
 import bg.sofia.uni.fmi.mjt.newsfeed.exceptions.NewsApiErrorException;
-import bg.sofia.uni.fmi.mjt.newsfeed.exceptions.ResponseIncorrect;
+import bg.sofia.uni.fmi.mjt.newsfeed.exceptions.ResponseIncorrectException;
 import bg.sofia.uni.fmi.mjt.newsfeed.news.Article;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
@@ -16,16 +16,21 @@ public class NewsFeedResponse implements PagedResponse {
     //private final Request nextPage;
 
     public NewsFeedResponse(String json){
-        JsonElement parser= JsonParser.parseString(json);
+        JsonElement parser;
+        try {
+            parser = JsonParser.parseString(json);
+        }catch (Exception e){
+            throw new ResponseIncorrectException("JSON is not valid");
+        }
         if (!parser.isJsonObject()) {
-            throw new ResponseIncorrect("Root element is not a JSON object");
+            throw new ResponseIncorrectException("Root element is not a JSON object");
         }
 
         var jsonObject= parser.getAsJsonObject();
         if(jsonObject.has("status")){
             status=jsonObject.get("status").getAsString();
         }else{
-            throw new ResponseIncorrect("Status field is missing from response");
+            throw new ResponseIncorrectException("Status field is missing from response");
         }
         handleErrors(status);
 
@@ -64,7 +69,7 @@ public class NewsFeedResponse implements PagedResponse {
             var articlesArray = jsonObject.getAsJsonArray("articles");
             articles = new Gson().fromJson(articlesArray, new com.google.gson.reflect.TypeToken<List<Article>>() {}.getType());
         } else {
-            throw new ResponseIncorrect("Missing 'articles' field");
+            throw new ResponseIncorrectException("Missing 'articles' field");
         }
     }
 
