@@ -4,4 +4,5 @@ import java.util.List;
 
 public interface Response {
     String getStatus();
+
 }

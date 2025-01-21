@@ -5,21 +5,17 @@ import java.awt.*;
 import java.io.IOException;
 import java.net.URL;
 import java.time.Instant;
+import java.util.Date;
 
 public class Article {
 
-    private static final String IMAGE_NOT_LOADED="Image";
-    //    private class Source{
-//        String id;
-//        String name;
-//    }
     private Source source;
     private String author;
     private String title;
     private String description;
     private URL url;
-    private Image image;
-    private Instant publishedAt;
+    private URL urlToImage;
+    private Date publishedAt;
     private String content;
 
     private boolean isImageLoaded;
@@ -29,17 +25,17 @@ public class Article {
 
     }
 
-    private void getImageFromUrl(URL imageUrl){
-        try {
-            image= ImageIO.read(imageUrl);
-        }catch (IOException e){
-            image=null;
-            isImageLoaded=false;
-        }
-    }
+//    private void getImageFromUrl(URL imageUrl){
+//        try {
+//            image= ImageIO.read(imageUrl);
+//        }catch (IOException e){
+//            image=null;
+//            isImageLoaded=false;
+//        }
+//    }
 
     private void getDateTime(String timestamp){
-        publishedAt = Instant.parse(timestamp);
+        publishedAt = Date.from(Instant.parse(timestamp));
     }
 
     public Article(Source source, String author, String title,
@@ -47,7 +43,8 @@ public class Article {
 
         validateArticle(source, author, title, description, url, imageUrl, publishedAt, content);
         isImageLoaded=true;
-        getImageFromUrl(imageUrl);
+        this.urlToImage=imageUrl;
+        //getImageFromUrl(imageUrl);
         getDateTime(publishedAt);
     }
 
@@ -71,19 +68,34 @@ public class Article {
         return url;
     }
 
-    public Image getImage() {
-        return image;
-    }
+//    public Image getImage() {
+//        return image;
+//    }
 
     public String getContent() {
         return content;
     }
 
-    public Instant getPublishedAt() {
+    public Date getPublishedAt() {
         return publishedAt;
     }
 
     public boolean isImageLoaded() {
         return isImageLoaded;
+    }
+
+    @Override
+    public String toString() {
+        return "Article{" +
+                "source=" + (source != null ? source.toString() : "null") +
+                ", author='" + (author != null ? author : "N/A") + '\'' +
+                ", title='" + (title != null ? title : "N/A") + '\'' +
+                ", description='" + (description != null ? description : "N/A") + '\'' +
+                ", url=" + (url != null ? url.toString() : "N/A") +
+                ", image=" + (urlToImage != null ? "Image Loaded" : "Image Not Loaded") +
+                ", publishedAt=" + (publishedAt != null ? publishedAt.toString() : "N/A") +
+                ", content='" + (content != null ? content : "N/A") + '\'' +
+                ", isImageLoaded=" + isImageLoaded +
+                '}';
     }
 }

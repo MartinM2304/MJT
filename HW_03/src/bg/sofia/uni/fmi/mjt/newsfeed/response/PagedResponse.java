@@ -1,7 +1,13 @@
 package bg.sofia.uni.fmi.mjt.newsfeed.response;
 
-public interface PagedResponse extends Response{
-    //Request getNextPageRequest();
+import bg.sofia.uni.fmi.mjt.newsfeed.news.Article;
+import bg.sofia.uni.fmi.mjt.newsfeed.request.Request;
 
-    boolean isLastPage();
+import java.util.List;
+
+public interface PagedResponse<T> extends Response{
+
+    List<T> getData();
+    //Request nextPage();
+    //boolean isLastPage();
 }
