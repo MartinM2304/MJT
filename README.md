@@ -16,7 +16,7 @@ Streams & Lambdas: Functional programming with Java Streams API.
 Collections Framework: Efficient data structures and algorithms.
 Design Patterns: Clean code practices and reusable design solutions.
 
-💡 What I Learned:\
+💡 What I Learned:
 
 Writing clean, maintainable, and modular code.
 Leveraging Java's powerful features, including streams, concurrency, and functional programming.
