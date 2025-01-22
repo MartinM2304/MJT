@@ -1,19 +1,15 @@
 package bg.sofia.uni.fmi.mjt.newsfeed.request;
 
 import bg.sofia.uni.fmi.mjt.newsfeed.exceptions.IllegalRequestParameter;
-import bg.sofia.uni.fmi.mjt.newsfeed.exceptions.NewsApiFreeException;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 public class NewsFeedRequest implements Request {
 
     private static final String BASE_URL = "https://newsapi.org/v2/top-headlines";
-    //private static final String API_KEY = "83badb6fcfc449e3a6765bd41e9b440b";
 
     private static final String QUERY_PARAM = "q";
     private static final String CATEGORY_PARAM = "category";
@@ -23,7 +19,8 @@ public class NewsFeedRequest implements Request {
     private static final String PAGE_SIZE_PARAM = "pageSize";
     private static final int PAGES_DEFAULT_SIZE = 20;
     private static final int PAGES_DEFAULT_NUMBER = 1;
-    private static final int FREE_NUMBER_OF_PAGES=100;
+    private static final int FREE_NUMBER_OF_PAGES = 100;
+    private static final int PAGES_MINIMUM = 1;
 
     private final String apiKey;
     private final Set<String> keyWords;
@@ -34,45 +31,33 @@ public class NewsFeedRequest implements Request {
 
     public NewsFeedRequest(NewsFeedBuilder builder) {
         keyWords = builder.keyWords;
-        if(keyWords==null|| keyWords.isEmpty()){
+        if (keyWords == null || keyWords.isEmpty()) {
             throw new IllegalRequestParameter("Cant make Request withour keywords");
         }
         categories = builder.categories;
         countries = builder.countries;
-        page=builder.page;
-        pageSize= builder.pageSize;
-        apiKey=builder.apiKey;
+        page = builder.page;
+        pageSize = builder.pageSize;
+        apiKey = builder.apiKey;
     }
 
     @Override
-    public NewsFeedRequest updatePage(int newPage){
-        if(newPage<0){
+    public NewsFeedRequest updatePage(int newPage) {
+        if (newPage < 0) {
             throw new IllegalArgumentException("pages must be more than 0");
         }
-        if(newPage*pageSize>FREE_NUMBER_OF_PAGES){
-            pageSize=FREE_NUMBER_OF_PAGES-(page-1)*pageSize;//using constant -1 as it is for previous page and is always -1
-            //throw new NewsApiFreeException("Requested result is more than the limit of the free api");
+        if (newPage * pageSize > FREE_NUMBER_OF_PAGES) {
+            pageSize = FREE_NUMBER_OF_PAGES - (page - 1) * pageSize;
         }
         return this;
-    }
-
-    private String appendParameters(StringBuilder result, String parameter) {
-        result.append(parameter).append("&");
-        return result.toString();
     }
 
     private String encodeParameter(String key, Set<String> values) {
         if (values.isEmpty()) {
             return "";
         }
-        return key + "=" + String.join("+", values.stream()
-                //.map(this::encodeValue)
-                .collect(Collectors.toList())) + "&";
+        return key + "=" + String.join("+", values.stream().collect(Collectors.toList())) + "&";
     }
-
-//    private String encodeValue(String value) {
-//        return value.replace(" ", "%20").replace("\"", "%22").replace("+", "%2B");
-//    }
 
     private String getSearchParameters() {
         StringBuilder result = new StringBuilder();
@@ -95,10 +80,9 @@ public class NewsFeedRequest implements Request {
     }
 
     @Override
-    public int pageSize(){
+    public int pageSize() {
         return pageSize;
     }
-
 
     public static NewsFeedBuilder getBuilder(String apiKey) {
         return new NewsFeedBuilder(apiKey);
@@ -113,12 +97,11 @@ public class NewsFeedRequest implements Request {
         private final String apiKey;
 
         public NewsFeedBuilder(String apiKey) {
-            if(apiKey==null||apiKey.isEmpty()||apiKey.isBlank()){
+            if (apiKey == null || apiKey.isEmpty() || apiKey.isBlank()) {
                 throw new IllegalArgumentException("Api key cant be empty");
             }
-            this.apiKey=apiKey;
+            this.apiKey = apiKey;
         }
-
 
         public NewsFeedBuilder addKeyWords(Collection<String> keyWords) {
             if (keyWords == null) {
@@ -145,7 +128,7 @@ public class NewsFeedRequest implements Request {
         }
 
         public NewsFeedBuilder setPage(int page) {
-            if (page < 1) {
+            if (page < PAGES_MINIMUM) {
                 throw new IllegalArgumentException("Page number must be greater than 0");
             }
             this.page = page;
@@ -153,7 +136,7 @@ public class NewsFeedRequest implements Request {
         }
 
         public NewsFeedBuilder setPageSize(int pageSize) {
-            if (pageSize < 1 || pageSize > 100) {
+            if (pageSize < PAGES_MINIMUM || pageSize > FREE_NUMBER_OF_PAGES) {
                 throw new IllegalArgumentException("Page size must be between 1 and 100");
             }
             this.pageSize = pageSize;

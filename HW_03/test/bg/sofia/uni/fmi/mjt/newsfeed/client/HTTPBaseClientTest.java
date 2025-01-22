@@ -251,4 +251,31 @@ public class HTTPBaseClientTest {
         List<String> result = client.loadAll();
         assertNotNull(result,"result should not be null");
     }
+
+    @Test
+    public void testExecuteWithInvalidPageSize() throws Exception {
+        String mockResponse = """
+                {
+                    "totalResults": null
+                }
+                """;
+
+        HttpClient mockHttpClient = mock(HttpClient.class);
+        HttpResponse<String> mockHttpResponse = mock(HttpResponse.class);
+        when(mockHttpResponse.body()).thenReturn(mockResponse);
+        when(mockHttpClient.send(any(HttpRequest.class), eq(HttpResponse.BodyHandlers.ofString())))
+                .thenReturn(mockHttpResponse);
+
+        Request mockRequest = mock(Request.class);
+        when(mockRequest.build()).thenReturn("http://mock.api/newsfeed");
+
+        Function<String, PagedResponse<Object>> mockParser = mock(Function.class);
+
+        HTTPBaseClient<Object> client = new HTTPBaseClient
+                .HTTPBaseClientBuilder<>(mockHttpClient, mockRequest, mockParser)
+                .build();
+
+        assertThrows(JSONParsingException.class, () -> client.loadPages(1),
+                "Should throw JSONParsingException when 'totalResults' cannot be parsed");
+    }
 }

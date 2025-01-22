@@ -13,23 +13,22 @@ import java.util.List;
 public class NewsFeedResponse implements PagedResponse {
     private String status;
     private List<Article> articles;
-    //private final Request nextPage;
 
-    public NewsFeedResponse(String json){
+    public NewsFeedResponse(String json) {
         JsonElement parser;
         try {
             parser = JsonParser.parseString(json);
-        }catch (Exception e){
+        } catch (Exception e) {
             throw new ResponseIncorrectException("JSON is not valid");
         }
         if (!parser.isJsonObject()) {
             throw new ResponseIncorrectException("Root element is not a JSON object");
         }
 
-        var jsonObject= parser.getAsJsonObject();
-        if(jsonObject.has("status")){
-            status=jsonObject.get("status").getAsString();
-        }else{
+        var jsonObject = parser.getAsJsonObject();
+        if (jsonObject.has("status")) {
+            status = jsonObject.get("status").getAsString();
+        } else {
             throw new ResponseIncorrectException("Status field is missing from response");
         }
         handleErrors(status);
@@ -38,9 +37,7 @@ public class NewsFeedResponse implements PagedResponse {
 
     }
 
-
-
-    private String getErrorMessage(String status){
+    private String getErrorMessage(String status) {
         String errorCode = "Unknown code";
         String errorMessage = "Unknown error";
 
@@ -58,21 +55,21 @@ public class NewsFeedResponse implements PagedResponse {
         return "Error occurred. Code: " + errorCode + ", Message: " + errorMessage;
     }
 
-    private void handleErrors(String status){
+    private void handleErrors(String status) {
         if (!"ok".equalsIgnoreCase(status)) {
             throw new NewsApiErrorException(getErrorMessage(status));
         }
     }
 
-    private void extractArticles(JsonObject jsonObject){
+    private void extractArticles(JsonObject jsonObject) {
         if (jsonObject.has("articles")) {
             var articlesArray = jsonObject.getAsJsonArray("articles");
-            articles = new Gson().fromJson(articlesArray, new com.google.gson.reflect.TypeToken<List<Article>>() {}.getType());
+            articles = new Gson().fromJson(articlesArray, new com.google.gson.reflect.TypeToken<List<Article>>() {
+            }.getType());
         } else {
             throw new ResponseIncorrectException("Missing 'articles' field");
         }
     }
-
 
     @Override
     public String getStatus() {
@@ -83,8 +80,7 @@ public class NewsFeedResponse implements PagedResponse {
         return articles;
     }
 
-    public static NewsFeedResponse of (String json){
+    public static NewsFeedResponse of(String json) {
         return new NewsFeedResponse(json);
     }
-
 }

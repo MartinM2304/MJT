@@ -1,6 +1,6 @@
 package bg.sofia.uni.fmi.mjt.newsfeed.exceptions;
 
-public class NewsApiErrorException extends RuntimeException{
+public class NewsApiErrorException extends RuntimeException {
     public NewsApiErrorException(String message) {
         super(message);
     }

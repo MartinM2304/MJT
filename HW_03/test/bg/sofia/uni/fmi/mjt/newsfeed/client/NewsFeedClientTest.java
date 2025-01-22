@@ -4,15 +4,18 @@ package bg.sofia.uni.fmi.mjt.newsfeed.client;
 import bg.sofia.uni.fmi.mjt.newsfeed.exceptions.NewsApiErrorException;
 import bg.sofia.uni.fmi.mjt.newsfeed.exceptions.ResponseIncorrectException;
 import bg.sofia.uni.fmi.mjt.newsfeed.news.Article;
+import bg.sofia.uni.fmi.mjt.newsfeed.request.Request;
 import bg.sofia.uni.fmi.mjt.newsfeed.response.NewsFeedResponse;
 import org.junit.jupiter.api.Test;
 
+import java.net.http.HttpClient;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
 
 class NewsFeedClientTest {
 
@@ -42,7 +45,7 @@ class NewsFeedClientTest {
         NewsFeedResponse response = new NewsFeedResponse(validResponseJson);
 
         List<Article> articles = response.getData();
-        assertEquals("Title1", articles.get(0).getTitle(),"Title should be Title1");
+        assertEquals("Title1", articles.get(0).title(),"Title should be Title1");
     }
 
     @Test
@@ -100,5 +103,24 @@ class NewsFeedClientTest {
         String malformedJson = "{";
 
         assertThrows(ResponseIncorrectException.class, () -> new NewsFeedResponse(malformedJson),"JSON must be in valid format");
+    }
+
+    @Test
+    public void testBuildWithRequest() {
+        Request mockRequest = mock(Request.class);
+
+        NewsFeedClient client = NewsFeedClient.builder(mockRequest).build();
+
+        assertNotNull(client, "Client should be created successfully");
+    }
+
+    @Test
+    public void testBuildWithHttpClientAndRequest() {
+        HttpClient mockHttpClient = mock(HttpClient.class);
+        Request mockRequest = mock(Request.class);
+
+        NewsFeedClient client = NewsFeedClient.builder(mockHttpClient, mockRequest).build();
+
+        assertNotNull(client, "Client should be created successfully");
     }
 }

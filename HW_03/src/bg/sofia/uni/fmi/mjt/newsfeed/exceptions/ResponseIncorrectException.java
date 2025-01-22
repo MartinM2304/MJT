@@ -1,6 +1,6 @@
 package bg.sofia.uni.fmi.mjt.newsfeed.exceptions;
 
-public class ResponseIncorrectException extends RuntimeException{
+public class ResponseIncorrectException extends RuntimeException {
     public ResponseIncorrectException(String message) {
         super(message);
     }

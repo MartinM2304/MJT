@@ -7,7 +7,7 @@ import java.util.List;
 
 public interface Client<T> {
 
-    List<T>loadPages(int numPages)throws ClientSendException, JSONParsingException;
+    List<T> loadPages(int numPages) throws ClientSendException, JSONParsingException;
 
-    List<T>loadAll()throws ClientSendException, JSONParsingException;
+    List<T> loadAll() throws ClientSendException, JSONParsingException;
 }
